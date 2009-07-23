@@ -1,0 +1,77 @@
+Things to do...
+
+This file contains a list of things that i want to accomplish for both hx AND
+hxd. This file is not a promise on my part to deliver the goods. It is merely a
+tracking list of ideas that surface in my many wanderings. Feel free to partake
+of my stringy soup of festive maticulations, happy mastication fellow user.
+
+In Progress
+===========
+- Modularize hxd
+
+High Priority
+=============
+- modularize hx
+- Add /priv
+- Add standardized errors messages
+- All the commands in hx that use uid, you can optionally use the user's
+  nickname (or part of a user's nickname), i will make it the same way with hxd
+- Change default location for mysql from /usr to /usr/local (mysql default
+  install location)
+- Add "permission denied" output to commands that are denied because of access
+- Add server side help on commands
+- Add write pid patch, uid patch (made by sam)
+
+Mediana Prioritaia
+==================
+- Add Mac Alias resolving
+- Add support for Mac Invisible files
+- Add support for Darwin HFS resource forks
+- Make the comments for files be held in the file (added via Carbon API) rather
+  than in .finderinfo
+- Add package support (so that packages on OS X show as single files and you
+  can download them as folders)
+- Add API type/creator sniffing for OS X
+- Add /info command (returns the contents of the info file defined in hxd.conf)
+  good for supplying server information
+- Make it so people can't message flood (drawing an rfc on this, we'll see if
+  it flies)
+- Add /1..9 commands to quickly switch between chats (/0 is pub chat) first 9
+  chats are mapped in ascending order, further chats are not mapped. You can
+  remap a chat with /mapchat <cid> <#> (0 removes the map).
+- Make multiple exec statements close together considered spam. (so it's even
+  harder bordering on nearly impossible to overload the server)(this is just
+  here for notes, this actually would fall under the rfc for antispam)
+- Add conn_max and individual_exec to the account conf file parsing
+
+Low Priority
+============
+- Add .hxdaccess feature
+- Add options in access to exclude info (ex. "address: <denied>")
+- Change the info dialog to show more (accurate) info and how long the user has
+  been in a certain state (active, inactive, etc.)
+- Add secure pchat (only people who are invited can enter)
+- Add optional message parameter to kick and ban to issue a final message to
+  the victim
+- Add $HXDOUTPUT environment variable for shell scripts (so the script can
+  decide whether it outputs to chat or if it outputs to a private message)
+- Add hxd.login for accounts (shell script executed on login)
+
+Back Burner
+===========
+- Add groups system
+- Add threaded news
+- Add administer accounts (HL 1.8 feature)
+- Fix network feature (don't even know what's wrong with it; more testing
+  required)
+- Add separate file for extension mapping on non-os x systems (like netatalk)
+
+Blorkified Idears
+=================
+- Add /me command
+- Add selective chat (/whisper)
+- Do not allow users to give themselves more priveleges or give others more
+  priveleges than they have themselves (including new accounts they create)
+- Add /kick &account (will kick an entire account, example: /kick &guest)
+  (tell me what you think of this one... i'm not sure, sounds ok)
+- Add 'less' style news to hx (think we found a better way)

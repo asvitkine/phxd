@@ -1,0 +1,181 @@
+/* include/config.h.in.  Generated automatically from configure.in by autoheader.  */
+
+/* Define to empty if the keyword does not work.  */
+#undef const
+
+/* Define as __inline if that's what the C compiler calls it.  */
+#undef inline
+
+/* Define to `int' if <sys/types.h> doesn't define.  */
+#undef pid_t
+
+/* Define if you need to in order for stat and other things to work.  */
+#undef _POSIX_SOURCE
+
+/* Define as the return type of signal handlers (int or void).  */
+#undef RETSIGTYPE
+
+/* Define to `unsigned' if <sys/types.h> doesn't define.  */
+#undef size_t
+
+/* Define if you have the ANSI C header files.  */
+#undef STDC_HEADERS
+
+/* Define if your processor stores words with the most significant
+   byte first (like Motorola and SPARC, unlike Intel and VAX).  */
+#undef WORDS_BIGENDIAN
+
+/* Define to `long int' if not defined by system */
+#undef ssize_t
+
+/* Define if not defined by system
+   u_int*_t is an integer type of exactly * bits */
+#undef u_int8_t
+#undef u_int16_t
+#undef u_int32_t
+#undef int8_t
+#undef int16_t
+#undef int32_t
+#undef socklen_t
+
+/* host guessing */
+#undef CONFIG_HOST_TYPE
+
+/* Define if snprintf is broken */
+#undef BROKEN_SNPRINTF
+
+/* Define to to use pthreads instead of fork or clone for htxf */
+#undef CONFIG_HTXF_PTHREAD
+
+/* Define to to use clone instead of fork for htxf */
+#undef CONFIG_HTXF_CLONE
+
+/* Define to use fork instead of clone for htxf */
+#undef CONFIG_HTXF_FORK
+
+/* Define to compile image preview code */
+#undef CONFIG_HTXF_PREVIEW
+
+/* Define to enable HFS */
+#undef CONFIG_HFS
+
+/* Define to compile megahal */
+#undef CONFIG_HAL
+
+/* Define to compile HOPE */
+#undef CONFIG_HOPE
+
+/* Define to compile cipher */
+#undef CONFIG_CIPHER
+
+/* Define to compile compress */
+#undef CONFIG_COMPRESS
+
+/* Define if you have the strcasestr function */
+#undef HAVE_STRCASESTR
+
+/* Define if you have the basename function */
+#undef HAVE_BASENAME
+
+/* Define if you have the realpath function */
+#undef HAVE_REALPATH
+
+/* Define if you have the strptime function */
+#undef HAVE_STRPTIME
+
+/* Path to tr */
+#undef PATH_TR
+
+/* Default sound player */
+#undef DEFAULT_SND_PLAYER
+
+/* Define to compile trackname command */
+#undef CONFIG_XMMS
+
+/* Define to dull the icon of a user when the user is away */
+#undef CONFIG_DULLED
+
+/* Enable IPv6 Support */
+#undef CONFIG_IPV6
+
+/* apple constants */
+#undef HOST_DARWIN
+#undef CORESERVICES
+
+/* The number of bytes in a int.  */
+#undef SIZEOF_INT
+
+/* The number of bytes in a long.  */
+#undef SIZEOF_LONG
+
+/* The number of bytes in a void *.  */
+#undef SIZEOF_VOID_P
+
+/* Define if you have the getdtablesize function.  */
+#undef HAVE_GETDTABLESIZE
+
+/* Define if you have the gethostname function.  */
+#undef HAVE_GETHOSTNAME
+
+/* Define if you have the getrlimit function.  */
+#undef HAVE_GETRLIMIT
+
+/* Define if you have the hstrerror function.  */
+#undef HAVE_HSTRERROR
+
+/* Define if you have the inet_aton function.  */
+#undef HAVE_INET_ATON
+
+/* Define if you have the inet_ntoa_r function.  */
+#undef HAVE_INET_NTOA_R
+
+/* Define if you have the localtime_r function.  */
+#undef HAVE_LOCALTIME_R
+
+/* Define if you have the putenv function.  */
+#undef HAVE_PUTENV
+
+/* Define if you have the snprintf function.  */
+#undef HAVE_SNPRINTF
+
+/* Define if you have the tcgetattr function.  */
+#undef HAVE_TCGETATTR
+
+/* Define if you have the tcsetattr function.  */
+#undef HAVE_TCSETATTR
+
+/* Define if you have the vsnprintf function.  */
+#undef HAVE_VSNPRINTF
+
+/* Define if you have the <openssl/rand.h> header file.  */
+#undef HAVE_OPENSSL_RAND_H
+
+/* Define if you have the <pthread.h> header file.  */
+#undef HAVE_PTHREAD_H
+
+/* Define if you have the <stdarg.h> header file.  */
+#undef HAVE_STDARG_H
+
+/* Define if you have the <sys/select.h> header file.  */
+#undef HAVE_SYS_SELECT_H
+
+/* Define if you have the <termcap.h> header file.  */
+#undef HAVE_TERMCAP_H
+
+/* Define if you have the 44bsd library (-l44bsd).  */
+#undef HAVE_LIB44BSD
+
+/* Define if you have the m library (-lm).  */
+#undef HAVE_LIBM
+
+/* Define if you have the nsl library (-lnsl).  */
+#undef HAVE_LIBNSL
+
+/* Define if you have the pthread library (-lpthread).  */
+#undef HAVE_LIBPTHREAD
+
+/* Define if you have the resolv library (-lresolv).  */
+#undef HAVE_LIBRESOLV
+
+/* Define if you have the socket library (-lsocket).  */
+#undef HAVE_LIBSOCKET

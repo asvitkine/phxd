@@ -1,0 +1,21 @@
+Special thanks to...
+
+ZapF for the Suse 7.1, Mandrake 8, and Yellow Dog Linux configure.in patch
+fintler for the 1.5 server queuing patch (submitted)
+bio and radrum for debugging assistance and bug diagnostics
+lupa for ideas and testing
+Jeremiah S. Junken for all his ideas
+angusd for Mac OS X and Darwin support (globals DARWIN and CARBON)
+Misha N. for the support
+catalyst and fIEND for great support
+Adriano 'Age' Manocchia for testing
+Kangoo for ideas
+Mark for helping with implementation and theory
+CafeLinux users for the support
+Atomical for the constant effort to crash my server forcing me to fix security
+kccustom for supplying the demand and for some feature requests
+delta for bug reports
+and all the users of shxd
+
+note: if you are not listed here, i sincerely apologize, just bring it to my
+attention (hehe)

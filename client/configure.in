@@ -1,0 +1,677 @@
+#
+# shx-0.2 configure script
+# December 17, 2002
+# Devin Teske <devinteske@hotmail.com>
+#
+# $Id: configure.in,v 2.0 2002/12/17 9:39:10 teske Exp $
+#
+
+AC_INIT(include/main.h)
+AC_PREREQ(2.12)
+AC_REVISION($Revision: 2.0 $)
+AC_CONFIG_HEADER(include/config.h)
+AC_PREFIX_DEFAULT(/usr/local/bin)
+AC_CONFIG_AUX_DIR(cfgaux)
+
+AC_CANONICAL_HOST
+
+# add a .exe suffix to the binary if we are on a win32 host
+case "$host_os" in
+cygwin|cygwin32|os2)
+   exec_suffix=".exe"
+   ;;
+*)
+   exec_suffix=""
+   ;;
+esac
+AC_SUBST(exec_suffix)
+
+AC_DEFINE_UNQUOTED(CONFIG_HOST_TYPE, "$host")
+
+# is the server included in this package?
+hotline_server="no"
+
+# Substitutions
+AC_SUBST(CFLAGS)
+AC_SUBST(TARGETS)
+AC_SUBST(hxdirs)
+AC_SUBST(INCLUDES)
+AC_SUBST(SYS_INCLUDES)
+AC_SUBST(HXOBJS)
+AC_SUBST(SHARED_OBJS)
+AC_SUBST(HXLIBS)
+AC_SUBST(SHAREDLIBS)
+AC_SUBST(CDEFS)
+
+# list of default makefiles to produce:
+makefiles="\
+   ./makefile       \
+   ./src/Makefile   "
+
+############################## Compiler Settings ##############################
+
+# Set default LDFLAGS
+if test -z "$LDFLAGS"; then
+   LDFLAGS="-g"
+fi
+
+PRESET_CFLAGS="$CFLAGS"
+
+# Check for GNU cc
+AC_PROG_CC
+
+if test $cross_compiling = yes; then
+   AC_CHECK_PROGS(BUILD_CC, gcc cc)
+   CC=$BUILD_CC
+fi
+
+# Check for ISC POSIX for additional arguments to compiler
+AC_ISC_POSIX
+
+# Gerban Wierda <Gerban_Wierda@RnA.nl>
+case "$host" in
+   mab-next-nextstep3)
+   CC="$CC -arch m68k -arch i486 -arch hppa -arch sparc"
+   ;;
+esac
+
+# Set Default CFLAGS
+if test -z "$PRESET_CFLAGS"; then
+   if test "$GCC" = "yes"; then
+      case "$host" in
+      *-sun-sunos*)
+         # sunos has too many warnings for this to be useful
+         # motorola too
+         ;;
+      *m88k*)
+         # Motorola cc/ld does not like -O2 but is ok on -O
+         CFLAGS=`echo $CFLAGS | sed -e 's/-O[0-9]/-O/'`
+         ;;
+      *)
+         CFLAGS="$CFLAGS -Wall"
+         ;;
+      esac
+   else
+      case "$host" in
+      *mips-sgi-irix6.*)
+         # suggested by Rafael Seidl <rafaels@cthulhu.engr.sgi.com>
+         CFLAGS="$CFLAGS -n32 -mips3 -O3 -OPT:Olimit=0:space=OFF \
+         -woff 1009,1014,1048,1110,1116,1185,1188,1204,1230,1233 \
+         -Wl,-woff,85,84,-woff,134 \
+         -nostdinc -I/usr/include -D_BSD_SIGNALS"
+         ;;
+      alpha-dec-osf4.*)
+         # Mogul says DEC compilers take both -g and -O2
+         CFLAGS=`echo $CFLAGS | sed -e 's/-g/-g3/'`
+         CFLAGS="$CFLAGS -O2"
+         ;;
+      *)
+         ;;
+      esac
+   fi
+fi
+
+# Set LDFLAGS
+if test -z "$PRESET_LDFLAGS"; then
+   if test "$GCC" = "yes"; then
+      case "$host" in
+      *)
+         # nothing
+         ;;
+      esac
+   else
+      case "$host" in
+      *mips-sgi-irix6.*)
+         # suggested by Rafael Seidl <rafaels@cthulhu.engr.sgi.com>
+         LDFLAGS="-n32 -mips3 -nostdlib -L/usr/lib32"
+         ;;
+      esac
+   fi
+fi
+
+############################### Enable  Options ###############################
+
+# Enable optional compile settings
+echo "Enable Options:"
+echo ""
+
+AC_ARG_ENABLE(warnings,
+[  --enable-warnings          Show compiler warnings],
+[ if test "$enableval" = "no" ; then
+   CFLAGS=`echo $CFLAGS | sed -e 's/\ -Wall//'`
+   CFLAGS="-w $CFLAGS"
+  else
+   echo "   Compiler warnings enabled"
+  fi
+],
+[ CFLAGS=`echo $CFLAGS | sed -e 's/\ -Wall//'`
+  CFLAGS="-w $CFLAGS"
+])
+
+hotline_client="yes"
+AC_ARG_ENABLE(hotline_client,
+[  --disable-hotline-client   Don't compile hotline client],
+[ if test "$enableval" = "no" ; then
+   hotline_client="no"
+  fi
+])
+
+if test "$hotline_client" = "yes" ; then
+   echo "   Hotline client enabled"
+fi
+
+# shared by the server and client
+AC_ARG_ENABLE(htxf-pthread,
+[  --enable-htxf-pthread      use pthread instead of fork or clone for htxf],
+[ if test "$enableval" = "yes" ; then
+   use_pthread="yes"
+  fi
+])
+
+AC_ARG_ENABLE(htxf-clone,
+[  --enable-htxf-clone        use clone instead of fork for htxf],
+[ if test "$enableval" = "yes" ; then
+   use_clone="yes"
+  fi
+])
+
+# only enable htxf when something that uses it is enabled
+if test "$hotline_server" = "yes" -o "$hotline_client" = "yes"; then
+   if test "$use_pthread" = "yes" ; then
+      echo "   pthreads enabled for file transfers"
+      AC_DEFINE(CONFIG_HTXF_PTHREAD)
+      AC_CHECK_HEADERS(pthread.h)
+
+      # fark! darwin has no pthread_kill, kill should do fine
+      case "$host" in
+      *-darwin*)
+         #AC_DEFINE(pthread_kill(A,B) kill(A,B))
+         ;;
+      esac
+      AC_CHECK_LIB(pthread, main)
+
+      # damn! FreeBSD's pthreads break dup2().
+      case "$host" in
+      i386-unknown-freebsd*)
+         HXLIBS="$HXDLIBS -pthread";;
+      i386-unknown-openbsd*)
+         HXLIBS="$HXDLIBS -pthread";;
+      *)
+         HXLIBS="$HXDLIBS -lpthread";;
+      esac
+
+      use_clone="no"
+   elif test "$use_clone" = "yes"; then
+      echo "   clone enabled for file transfers"
+      AC_DEFINE(CONFIG_HTXF_CLONE)
+      AC_CHECK_HEADER(sched.h)
+      AC_CHECK_HEADER(asm/pal.h)
+   else
+      echo "   fork enabled for file transfers"
+      AC_DEFINE(CONFIG_HTXF_FORK)
+   fi
+fi
+
+# shared by the client and server
+AC_ARG_ENABLE(htxf-preview,
+[  --enable-htxf-preview      enable image preview (needs ImageMagick)],
+[ if test "$enableval" = "yes" ; then
+   # only enable htxf-preview when something that uses it is enabled
+   if test "$hotline_server" = "yes" -o "$hotline_client" = "yes" ; then
+      echo "   image preview for ghx enabled"
+      AC_DEFINE(CONFIG_HTXF_PREVIEW)
+      SYS_INCLUDES="$SYS_INCLUDES -I/usr/X11R6/include -I/usr/X11R6/include/X11"
+      SHAREDLIBS="$SHAREDLIBS `Magick-config --libs`"
+   fi
+  fi
+])
+
+# shared by the client and server
+enable_hfs="yes"
+AC_ARG_ENABLE(hfs,
+[  --disable-hfs              disable HFS file system emulation],
+[ if test "$enableval" = "no" ; then
+   enable_hfs="no"
+  fi
+])
+
+# only enable hfs when something that uses it is enabled
+if test "$hotline_server" = "yes" -o "$hotline_client" = "yes" ; then
+   if test "$enable_hfs" = "yes" ; then
+      echo "   HFS emulation enabled"
+      HXLIBS="$HXLIBS hfs/hfs.o"
+      hxdirs="$hxdirs hfs"
+      makefiles="$makefiles ./src/hfs/Makefile"
+      AC_DEFINE(CONFIG_HFS)
+   else
+      echo "   HFS emulation disabled"
+   fi
+fi
+
+
+# shared by the client and server
+AC_ARG_ENABLE(hope,
+[  --enable-hope              enable HOPE],
+[ if test "$enableval" = "yes" ; then
+   use_hope="yes"
+  fi
+])
+
+# only enable hope when something that uses it is enabled
+if test "$hotline_server" = "yes" -o "$hotline_client" = "yes" ; then
+   if test "$use_hope" = "yes" ; then
+      echo "   HOPE enabled"
+      AC_DEFINE(CONFIG_HOPE)
+      AC_CHECK_HEADER(endian.h)
+      SHAREDLIBS="$SHAREDLIBS hope/hmac.o hope/md5.o hope/sha.o"
+      SHAREDLIBS="$SHAREDLIBS hope/haval.o hope/rand.o"
+      hxdirs="$hxdirs hope"
+      makefiles="$makefiles ./src/hope/Makefile"
+   fi
+fi
+
+# shared by the server and client
+AC_ARG_ENABLE(cipher,
+[  --enable-cipher            enable cipher],
+[ if test "$enableval" = "yes" ; then
+   use_cipher="yes"
+  fi
+])
+
+# only enable cipher when something that uses it is enabled
+if test "$hotline_server" = "yes" -o "$hotline_client" = "yes" ; then
+   if test "$use_cipher" = "yes" ; then
+      echo "   cipher enabled"
+      if test "$use_hope" != "yes" ; then
+         AC_MSG_ERROR("hope must be enbaled to enable cipher")
+      fi
+      AC_DEFINE(CONFIG_CIPHER)
+      SHAREDLIBS="$SHAREDLIBS cipher/cipher.o"
+      hxdirs="$hxdirs cipher"
+      makefiles="$makefiles ./src/cipher/Makefile"
+   fi
+fi
+
+# more hope stuff
+if test "$hotline_server" = "yes" -o "$hotline_client" = "yes" ; then
+   if test "$use_hope" = "yes" -o "$use_cipher" = "yes" ; then
+      AC_CHECK_HEADERS(openssl/rand.h)
+      SYS_INCLUDES="$SYS_INCLUDES -I/usr/local/ssl/include"
+      LDFLAGS="$LDFLAGS -L/usr/local/ssl/lib"
+      SHAREDLIBS="$SHAREDLIBS -lcrypto"
+   fi
+fi
+
+# shared by the server and client
+AC_ARG_ENABLE(compress,
+[  --enable-compress          enable compress],
+[ if test "$enableval" = "yes" ; then
+   use_compress="yes"
+  fi
+])
+
+# only enable compress when something that uses it is enabled
+if test "$hotline_server" = "yes" -o "$hotline_client" = "yes" ; then
+   if test "$use_compress" = "yes" ; then
+      echo "   on-the-fly compression enabled"
+      AC_DEFINE(CONFIG_COMPRESS)
+      SHAREDLIBS="$SHAREDLIBS compress/compress.o"
+      hxdirs="$hxdirs compress"
+      makefiles="$makefiles ./src/compress/Makefile"
+      AC_CHECK_LIB(z, deflate, SHAREDLIBS="$SHAREDLIBS -lz")
+   fi
+fi
+
+# client only feature
+AC_ARG_ENABLE(hal,
+[  --enable-hal               compile MegaHAL],
+[ if test "$enableval" = "yes" -a "$hotline_client" = "yes" ; then
+   echo "   MegaHAL enabled for client"
+   HXOBJS="$HXOBJS hal.o"
+   AC_DEFINE(CONFIG_HAL)
+   AC_CHECK_LIB(moto, log, HXLIBS="$HXLIBS -lmoto",
+      AC_CHECK_LIB(m, log,
+         [ HXLIBS="$HXLIBS -lm"
+           math_used="yes" ]
+      )
+   )
+  fi
+])
+   
+
+# client only feature
+AC_ARG_ENABLE(xmms,
+[  --enable-xmms              enable trackname command],
+[ if test "$enableval" = "yes" -a "$hotline_client" = "yes" ; then
+   echo "   xmms support enabled for client"
+   AC_DEFINE(CONFIG_XMMS)
+   HXOBJS="$HXOBJS xmmslib.o"
+  fi
+])
+
+# client only feature
+AC_ARG_ENABLE(gtk,
+[  --enable-gtk               compile gtk frontend],
+[ if test "$enableval" = "yes" ; then
+   enable_gtk="yes"
+  fi
+])
+
+# only enable gtk if the client is enabled
+if test "$hotline_client" = "yes" ; then
+   if test "$enable_gtk" = "yes" ; then
+      echo "   GTK front end enabled for client"
+      SYS_INCLUDES="$SYS_INCLUDES `gtk-config --cflags gtk`"
+      SYS_INCLUDES="$SYS_INCLUDES `glib-config --cflags glib`"
+      HXLIBS="$HXLIBS `gtk-config --libs gtk`"
+      HXLIBS="$HXLIBS `glib-config --libs glib`"
+      HXLIBS="$HXLIBS gtk/hlist.o gtk/gtk.o gtk/about.o"
+      HXLIBS="$HXLIBS gtk/cicn.o gtk/history.o"
+      HXOBJS="$HXOBJS ghx_main.o ghx_tty.o ghx_hlclient.o"
+      hxdirs="$hxdirs gtk"
+      makefiles="$makefiles ./src/gtk/Makefile"
+      TARGETS="$TARGETS \$(GHX_EXE)"
+   else
+      # search for the tgetent termcap function (in termcap library first)
+      AC_CHECK_LIB(termcap, tgetent, HXLIBS="$HXLIBS -ltermcap", tgetent="no")
+
+      # if it wasn't found in termcap it might be in the ncurses library
+      if test "$tgetent" = "no" ; then
+         AC_CHECK_LIB(ncurses, tgetent,
+            [ HXLIBS="$HXLIBS -lncurses"
+              ncurses_used="yes"
+              tgetent="yes"
+            ],
+            tgetent="no"
+         )
+
+         # finally if it wasn't in ncurses, let's check for it with ldconfig
+         if test "$tgetent" = "no" ; then
+            tge=`/sbin/ldconfig -p|grep libtermcap|awk '{print $4}'|head -1`
+            if test -z "$tge" ; then
+               # couldn't find it
+               AC_MSG_ERROR("missing termcap function tgetent")
+            else
+               HXLIBS="$HXLIBS $tge"
+            fi
+         fi
+      fi
+
+      # the following check is for informational purposes only
+      AC_CHECK_LIB(readline, rl_callback_handler_install)
+
+      # always add readline (it is necessary)
+      HXLIBS="$HXLIBS -lreadline"
+      AC_CHECK_LIB(history, using_history, HXLIBS="$HXLIBS -lhistory")
+
+      HXOBJS="$HXOBJS hx_main.o hx_tty.o hlclient.o"
+      TARGETS="$TARGETS \$(HX_EXE)"
+   fi
+fi
+
+# client only feature
+AC_ARG_ENABLE(dulled,
+[  --enable-dulled            enabled dulled idle user icons],
+[ if test "$enableval" = "yes" -a "$hotline_client" = "yes" ; then
+   echo "   dulled user icons enabled for gtk front end"
+   AC_DEFINE(CONFIG_DULLED)
+  fi
+])
+
+# shared by the client and server
+AC_ARG_ENABLE(ipv6,
+[  --enable-ipv6              IPv6 support. IPv4 will not work],
+[ if test "$enableval" = "yes" ; then
+   # only enable IPv6 when something that uses it is enabled
+   if test "$hotline_server" = "yes" -o "$hotline_client" = "yes" ; then
+      AC_DEFINE(CONFIG_IPV6)
+   fi
+  fi
+])
+
+# client only feature
+AC_ARG_WITH(socks,
+[  --with-socks[=dir]         use socks library in dir],
+[ if test "$hotline_client" = "yes" ; then
+   echo "   Socks v5 support enabled for client"
+   AC_CHECK_LIB(socks5, SOCKSinit, HXLIBS="$HXLIBS -lsocks5")
+   CFLAGS="$CFLAGS -DSOCKS -DINCLUDE_PROTOTYPES"
+   if test -n "$withval" ; then
+      HXLIBS="$HXLIBS -L$withval"
+   fi
+ fi
+])
+
+# client only feature
+AC_ARG_WITH(socks_include,
+[  --with-socks-include=dir   use socks header in dir],
+[ if test -n "$withval" -a "$hotline_client" = "yes" ; then
+   SYS_INCLUDES="$SYS_INCLUDES -I$withval"
+  fi
+])
+
+# client only feature
+AC_ARG_WITH(sndplayer,
+[  --with-sndplayer=player    default=play],
+[ if test "$hotline_client" = "yes" ; then
+   if test -n "$withval" ; then
+      AC_DEFINE_UNQUOTED(DEFAULT_SND_PLAYER, "$withval")
+   else
+      AC_DEFINE_UNQUOTED(DEFAULT_SND_PLAYER, "play")
+   fi
+  fi
+],
+[ if test "$hotline_client" = "yes" ; then
+   AC_DEFINE_UNQUOTED(DEFAULT_SND_PLAYER, "play")
+  fi
+])
+
+
+echo ""
+
+############################ Environment  Settings ############################
+
+# Force some compilers to use ANSI features
+case "$host" in
+alpha-dec-osf*)
+   if test "$ac_cv_prog_CC" = "cc" ; then
+      echo "adding '-std1' to cc args for $host"
+      CC="cc -std1";
+      ac_cv_prog_CC="$CC"
+   fi
+   ;;
+*-hp-hpux*)
+   if test "$ac_cv_prog_CC" = "cc" ; then
+      echo "adding '-Ae' to cc args for $host"
+      CC="cc -Ae";
+      ac_cv_prog_CC="$CC"
+   fi
+esac
+
+# Check for programs
+AC_PROG_INSTALL
+AC_PATH_PROG(SH, sh, /bin/sh)
+AC_PATH_PROG(TR, tr, "/bin/tr")
+AC_PATH_PROG(FALSE, false, /usr/bin/false)
+AC_PATH_PROG(TRUE, true, /usr/bin/true)
+AC_PATH_PROG(RM, rm, $FALSE)
+AC_PATH_PROG(MV, mv, $FALSE)
+AC_PATH_PROG(MKDIR, mkdir, $FALSE)
+AC_PATH_PROG(LN, ln, cp)
+AC_PATH_PROG(MAKEDEPEND, makedepend, $TRUE)
+
+AC_DEFINE_UNQUOTED(PATH_TR, "$TR")
+
+AC_C_CONST
+AC_C_INLINE
+AC_C_BIGENDIAN
+
+AC_CHECK_HEADERS(sys/select.h stdarg.h)
+
+# test for CoreServices API
+AC_MSG_CHECKING(for CoreServices (Mac OS X))
+AC_CACHE_VAL(ac_cv_coreservices,
+   AC_TRY_COMPILE([ #include <CoreServices/CoreServices.h> ],
+      [ FSRef foo; ],
+	ac_cv_coreservices="yes",
+	ac_cv_coreservices="no"
+   )
+)
+
+AC_MSG_RESULT($ac_cv_coreservices)
+
+# enable CoreServices files (if the server is enabled)
+if test "$hotline_server" = "yes" ; then
+   if test "$ac_cv_coreservices" = "yes" ; then
+      AC_DEFINE(CORESERVICES)
+      SYS_INCLUDES="$SYS_INCLUDES -I/Developer/Headers/FlatCarbon"
+      HXDLIBS="$HXDLIBS -framework coreservices"
+      HXDLIBS="$HXDLIBS apple/alias.o apple/cfurl.o"
+      hxddirs="$hxddirs apple"
+      makefiles="$makefiles ./src/apple/Makefile"
+   fi
+fi
+
+# set flags for darwin based operating systems
+case "$host" in
+*-darwin*)
+   AC_DEFINE(HOST_DARWIN)
+   ;;
+esac
+
+# Check for typedefs
+AC_CHECK_SIZEOF(int)
+AC_CHECK_SIZEOF(long)
+AC_CHECK_SIZEOF(void *)
+
+AC_TYPE_SIGNAL
+AC_TYPE_SIZE_T
+AC_CHECK_TYPE(pid_t, int)
+AC_CHECK_TYPE(ssize_t, long)
+AC_CHECK_TYPE(u_int8_t, unsigned char)
+AC_CHECK_TYPE(u_int16_t, unsigned short)
+AC_CHECK_TYPE(u_int32_t, unsigned int)
+AC_CHECK_TYPE(int8_t, char)
+AC_CHECK_TYPE(int16_t, short)
+AC_CHECK_TYPE(int32_t, int)
+
+# Check for type in sys/socket.h
+AC_CACHE_CHECK(for socklen_t, ac_cv_type_socklen_t,
+[ AC_EGREP_CPP(
+   [ socklen_t[^a-zA-Z_0-9] ],
+   [ #include <sys/types.h>
+     #include <sys/socket.h>
+     #if STDC_HEADERS
+     #include <stdlib.h>
+     #include <stddef.h>
+     #endif
+   ],
+   ac_cv_type_socklen_t="yes",
+   ac_cv_type_socklen_t="no"
+  )
+])
+if test "$ac_cv_type_socklen_t" = "no" ; then
+   AC_DEFINE(socklen_t, int)
+fi
+
+AC_CHECK_FUNCS(snprintf,
+   AC_CHECK_FUNCS(vsnprintf, ac_cv_func_snprintf="yes",
+      [ SHARED_OBJS="$SHARED_OBJS snprintf.o"
+        ac_cv_func_snprintf="no"
+      ]
+   ),
+   [ SHARED_OBJS="$SHARED_OBJS snprintf.o"
+     ac_cv_func_snprintf="no"
+   ]
+)
+
+if test "$ac_cv_func_snprintf" = "yes" ; then
+   AC_MSG_CHECKING(for broken snprintf)
+   AC_CACHE_VAL(ac_cv_broken_snprintf,
+      AC_TRY_RUN(
+         [ #include <stdio.h>
+           int main()
+           {
+              char *buf;
+              return snprintf(buf,1,"ab%s","cdefg")!=-1 ? 1 : 0;
+           }
+         ],
+         ac_cv_broken_snprintf="no",
+         ac_cv_broken_snprintf="yes"
+      )
+   )
+   AC_MSG_RESULT($ac_cv_broken_snprintf)
+   if test "$ac_cv_broken_snprintf" = "yes" ; then
+      AC_DEFINE(BROKEN_SNPRINTF)
+      SHARED_OBJS="$SHARED_OBJS snprintf.o"
+   fi
+fi
+
+# server check
+if test "$hotline_server" = "yes" ; then
+   AC_CHECK_FUNC(bind, gethostbyname)
+   if test "$ac_cv_lib_bind_gethostbyname" = "no" ; then
+      case "$host" in
+      i386-*-freebsd*)
+         echo "skipping libresolv checks for $host"
+         ;;
+      *)
+         AC_CHECK_LIB(resolv, inet_aton, [ AC_CHECK_LIB(44bsd, inet_aton) ])
+         AC_CHECK_LIB(resolv, main)
+         ;;
+      esac
+   fi
+   AC_CHECK_LIB(m, main)
+fi
+
+# Check for library functions
+AC_REPLACE_FUNCS(localtime_r inet_aton)
+AC_CHECK_FUNCS(getrlimit getdtablesize)
+AC_CHECK_FUNC(gethostbyname, , AC_CHECK_LIB(nsl, gethostbyname))
+AC_CHECK_FUNC(socket, , AC_CHECK_LIB(socket, socket))
+
+# add ncurses if it hasn't already (from a previous test) to client libraries
+if test "$hotline_client" = "yes" ; then
+   if test "$ncurses_used" != "yes" ; then
+      AC_CHECK_LIB(ncurses, initscr,
+         HXLIBS="$HXLIBS -lncurses",
+         AC_CHECK_LIB(curses, initscr, HXLIBS="$HXLIBS -lcurses")
+      )
+   fi
+   AC_CHECK_HEADERS(termcap.h)
+fi
+
+# client/server function tests
+if test "$hotline_server" = "yes" -o "$hotline_client" = "yes" ; then
+   AC_CHECK_FUNC(strcasestr,
+      AC_DEFINE(HAVE_STRCASESTR),
+      SHARED_OBJS="$SHARED_OBJS strcasestr.o")
+   AC_REPLACE_FUNCS(inet_ntoa_r)
+fi
+
+# server function tests
+if test "$hotline_server" = "yes" ; then
+   AC_CHECK_FUNC(realpath,
+      AC_DEFINE(HAVE_REALPATH),
+      HXDOBJS="$HXDOBJS realpath.o")
+   AC_CHECK_FUNC(strptime,
+      AC_DEFINE(HAVE_STRPTIME),
+      HXDOBJS="$HXDOBJS strptime.o")
+   TARGETS="$TARGETS \$(HXD_EXE)"
+fi
+
+# client function tests
+if test "$hotline_client" = "yes" ; then
+   AC_CHECK_FUNC(basename,
+      AC_DEFINE(HAVE_BASENAME),
+      HXOBJS="$HXOBJS basename.o")
+   AC_CHECK_FUNCS(hstrerror gethostname putenv tcgetattr tcsetattr)
+   AC_CHECK_FUNC(getopt_long_r, ,
+      HXOBJS="$HXOBJS getopt_r.o getopt1_r.o")
+fi
+
+# Clean up after OSF/1 core dump bug
+rm -f core
+
+# generate the makefiles
+AC_OUTPUT($makefiles)

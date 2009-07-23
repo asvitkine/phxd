@@ -1,0 +1,62 @@
+Mac OS X
+========
+*****pthreads*****
+
+Mac OS X has a deprecated find version. It doesn't support -iname
+(case-insensitive searching) or -printf (output formatting). Two options that
+are used in the find script. In order to fix the find script...
+
+change:
+deprecated_find=0;
+
+to:
+deprecated_find=1;
+
+If you wish to go the other route and upgrade the find utility in OS X
+(darwin), it's a very easy process. Simply download the GNU find 4.1 Darwin
+that i packaged and run install.sh
+
+http://synhxd.sourceforge.net/darwin_gnufind.tgz
+
+*****remote queueing*****
+
+due to the lack of poll on the darwin/Mac OS X system, remote queueing is not
+available to it yet. Working on a port to select (the darwin poll alternative)
+
+AIX
+===
+due to bugs in L. Ron Hubbard knows what, configure will
+generate a broken config.h on a version of AIX.
+
+change:
+#define u_int8_t unsigned char char
+#define u_int16_t unsigned short short
+#undef u_int32_t
+#undef HAVE_SYS_SELECT_H
+
+to:
+#define u_int8_t unsigned char
+#define u_int16_t unsigned short
+#define u_int32_t unsigned int
+#define HAVE_SYS_SELECT_H
+
+BSDI
+====
+gcc version 2.7.2.1 on the BSDI system I used did not compile
+hxd correctly.
+gcc 1.42 worked, on the system i used this was `cc'.
+
+HPUX
+====
+with sql you might need to link with -lm
+
+NextStep
+========
+use gcc -posix
+malloc does not work when linking with -lposix, so you must extract the object
+files needed from libposix.a and link with those.
+
+OpenBSD / gcc 2.8.1
+===================
+On OpenBSD with gcc 2.8.1, if you get a core dump in hlwrite, try compiling
+without optimization, this works a little better, but get a working compiler.

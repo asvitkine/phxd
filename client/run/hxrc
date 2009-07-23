@@ -1,0 +1,10 @@
+snd -O
+snd -s ~/hxsnds/logged-in.wav login off
+snd -s ~/hxsnds/message.wav message on
+snd -s ~/hxsnds/chatpost.wav chat off
+snd -s ~/hxsnds/newspost.wav news off
+snd -s ~/hxsnds/join.wav join off
+snd -s ~/hxsnds/part.wav part off
+snd -s ~/hxsnds/chatinvite.wav chat_invite on
+snd -s ~/hxsnds/filedone.wav file_done off
+snd -s ~/hxsnds/error.wav error on

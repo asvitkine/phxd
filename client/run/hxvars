@@ -1,0 +1,84 @@
+# these values are for GTK+ enabled hx (--enable-gtk)
+chat_font[0][0]='shine'
+user_icon_files[0]='zombie_icons.rsrc'
+user_icon_files[1]='bm_icons.rsrc'
+user_icon_files[2]='icons.rsrc'
+icon_files[0]='icons.rsrc'
+window_geometry[0][chat]='628x405+83+81'
+window_geometry[0][toolbar]='362x33+303+0'
+window_geometry[0][users]='254x842+0+0'
+window_geometry[0][tasks]='444x118+763+442'
+window_geometry[0][news]='485x437+39+512'
+window_geometry[0][tracker]='914x432+49+301'
+window_geometry[0][post]='453x190+422+493'
+window_geometry[0][options]='337x373+370+322'
+window_geometry[0][useredit]='250x637+652+184'
+window_geometry[0][connect]='359x239+460+392'
+window_geometry[0][files]='0x0+0+0'
+
+# these values are for tty enabled hx (--enable-tty)(enabled by default)
+tty_show_user_parts='1'
+tty_show_user_joins='1'
+tty_show_user_changes='1'
+tty_chat_pretty='0'
+
+# ANSI coloring options
+strip_ansi='0'
+infoprefix='[1;32mú[1;36mù[1;32mú[0m '
+
+# these options specify the default host address and port to use
+# when no address is specified to `/server' and also overrides the
+# address/port specified when remote_client is enabled unless
+# you allow connections to foreign hosts in the settings below.
+# default port is 5500.
+#
+# example:
+#
+#    remote_host='localhost'
+#    remote_host_port='5500'
+#
+remote_host=''
+remote_host_port='5500'
+
+# if HOPE and cipher is enabled, hx will attempt to log in to all
+# servers using secure login (HOPE). however, you can set the
+# default functionality here, whether you want hx to attempt secure
+# login or insecure login by default when no specific flags are
+# present. you can always specify the particular login type manually
+# by passing either -s (for secure) or -o (old, insecure) to the
+# `/server' command. for more information see `/help server').
+#
+default_secure='0'
+
+# for displaying useful information when hx is started, you can
+# optionally set this variable to a file path of a file that you
+# would like printed out to the user.
+#
+# example:
+#
+#    readme='~/hx_readme'
+#
+readme=''
+
+# when remote_client is set to '1', this setting tells hx whether
+# connections to other hosts besides remote_host:remote_host_port
+# should be allowed. default is to disallow connections to foreign
+# hosts. set this value to '1' to authorize the connections.
+# default is to deny connections to foreign hosts.
+#
+allow_foreign_hosts='0'
+
+# You can enable strict security settings by setting this variable
+# to '1' (default is '0'). Turning this feature on disables the
+# ability to use `/exec', `/set', `/get', `/hostname -s', `/lcd',
+# `/load', `/lpwd', `/put', and `/type' to prevent reading/writing
+# to the host machine and/or executing commands on the host.
+#
+# once remote_client is set to '1', varaibles can no
+# longer be modified, so make sure if you change this
+# value to 1, that it is the last line in this file.
+#
+remote_client='0'
+
+
+#end#

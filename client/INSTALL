@@ -1,0 +1,55 @@
+hx is a free set of software using hotline protocols.
+see
+  http://www.vivahx.com/		Viva HX!
+  http://dmp.fimble.com/		Fimble
+  http://www.hotlinehq.com/		Hotline HeadQuarters
+  http://www.BigRedH.com		Hotline Communications Ltd.
+for information about Hotline.
+see
+  http://hx.fortyoz.org/
+for the latest info on hx.
+
+you can bug the author at:
+  ran@krazynet.com
+
+there is a mailing list thanks to Age Manocchia, to subscribe,
+see http://www.hockey.cornell.edu:8100/Lists/hxd-l/List.html
+
+you need an ANSI C compiler, preferably the GNU C compiler, to compile hxd.
+traditional compilers may work, if they understand function prototypes.
+the ultrix 4.3 compiler does, if your compiler does not, try ansi2knr.
+
+if you run into problems building or running, you might want to read PROBLEMS.
+
+hx client
+=========
+to compile the client:
+$ ./configure
+$ make
+
+to start it:
+$ ./hx
+
+you may need to get libreadline from ftp://ftp.gnu.org/pub/gnu/readline/
+
+soundsets are loaded with snd -S sndset_file
+turn sounds on/off with snd -O/-o
+
+ghx client
+==========
+to compile:
+$ ./configure --enable-gtk
+$ make
+
+specify icon files with icon_files[i]=...
+user icon files with user_icon_files[i]=...
+files with lower indexen are loaded first
+for example:
+icon_files[0]=icons.rsrc
+user_icon_files[0]=bm_icons.rsrc
+user_icon_files[1]=icons.rsrc
+
+SOCKS
+=====
+hx can use the socks5 library from http://www.socks.nec.com/
+use the --with-socks and/or --with-socks-include configure options.

@@ -1,0 +1,893 @@
+Version 0.2.2 August 4, 2003
+============================
+- fixed security exploit to disable remote_client through variable_command()
+- hx_savevars() is no longer called if remote_client is set when quit
+- remote_host_port in .hxvars is now set and used regardless of remote_client
+- added allow_foreign_hosts to hxvars to toggle ability to log into foreign
+  hosts (opposed to remote_host only)
+- /server outputs error if remote_client is enabled and a foreign host is
+  denied instead of automatically logging into remote_host
+- fixed missing newline character at the end of `/help' output
+
+Version 0.2.1 December 27, 2002
+===============================
+- fixed corrupted downloads when using htxf-pthread (fix by ror)
+
+Version 0.2 December 17, 2002
+=============================
+- removed some more hxd related code
+- organized source files
+- rewrote configure.in (now shx has cought up to shxd in the configure/make
+  process and should be a lot easier to compile on many systems)
+- rewrote makefiles
+- added ability to connect to ciphered servers behind NAT (with -f)
+- changed settings to default to use openssl when cipher is enabled
+- removed support for the deprecated IDEA encryption
+- added help for /hash command
+
+Version 0.1.50 December 15, 2002
+================================
+- added default_secure, readme, remote_host, remote_host_port, and
+  remote_client options to hxvars file to allow setting up a restricted hx to
+  be used as a login shell for remote users to access a specific hotline server
+- fixed grammar in help text for the password command
+
+Version 0.1.49 September 2, 2001
+================================
+- fixed illicit use of bash in exec command (note: this is in hx)
+
+Version 0.1.48 August 31, 2001
+==============================
+- split hxd and hx code structure (they are now two separate versions available
+  as separate downloads)
+
+Version 0.1.47 August 29, 2001
+==============================
+- added version chat command to hxd (outputs server version)
+- fixed overrun memory problem in users command
+- added more security to command output (ensuring someone can't crash the
+  server on a lagged line causing data to be sent to a vaporized socket)
+- fixed find script to use /bin/sh instead of /bin/bash
+- fixed problem causing find script to output on same line as chat if chat was
+  sent during a find
+- added command escaping ("\/help" outputs "/help" to chat)
+- changed default unknown type/creator of unknown files to ????/????
+
+Version 0.1.46.1 August 26, 2001
+================================
+- fixed problem in hx (missing newline in pchats)
+
+Version 0.1.46 August 26, 2001
+==============================
+- added official install-sh script to detect the host type (with config.guess
+  and config.sub)(so that we can detect Darwin)
+- disabled libtermcap.so library checking on Darwin systems (tgetent is defined
+  in the readline lib so termcap is unnecessary)
+- added default icon to access file
+- added internal detection of HL1.5+ clients
+- added support for TIDE authentication routines
+- fixed the pthread bug that causes the server to report that there are 65535
+  downloads in process and that the maximum number of downloads has been reached
+- added redeclaration of pthread_kill (to kill) for OS X (note: this never
+  caused a leak, the problem was simply what was fixed above)
+- added support in ./exec/find for deprecated find functions (Darwin has an old
+  find function, this is to support it)(note: read the comments in ./exec/find)
+- packaged up GNU find 4.1 binary for OS X users (it's on the site)
+- added ability to change your icon even if you do not have the privelege to
+  use any name (this may have been considered a bug)
+- added remote server queueing (available only with --enable-htxf-clone right
+  now, I'm working on patching it to work with pthreads/fork/normal)
+- added small document (./info/HowTo) to explain remote queueing
+
+Version 0.1.45.3 August 22, 2001
+================================
+- fixed 'skewed clock' error on OS X
+
+Version 0.1.45.2 August 22, 2001
+================================
+- fixed readline/libtermcap.so bug for Suse 7.1, Mandrake 8, and Yellow Dog
+  Linux 2 (this is a bug in the Operating System related to the packaging
+  system, i just added a fix for it)
+
+Version 0.1.45, August 21, 2001
+===============================
+- temporarily commented out the pthread fix for os x (causes a leak)
+- it now compiles without --enable-exec (oops?)
+
+Version 0.1.44, August 20, 2001
+==============================
+- fixed bug in find (unnecessary appended "/files/" to result)
+- moved documentation to ./info
+- added documentation on 'conf' files (./info/confFiles)
+- you can now always get info on yourself
+- fixed bug that caused "hxd: color: command not found" to be posted when
+  "/color" was entered
+- added a work around for HL 1.5+ clients. Adding the ability to get info on
+  yourself wasn't enough. Because the HL 1.5+ clients disable the button if you
+  don't have the privelege. So i added a work around that reports on login that
+  you have the priv and then after sending it, sets it back to it's true value.
+  So the client always has the button enabled.
+- added users chat command (allows you to see invisible users)
+- added manage_users access property for accounts
+- added color access property for accounts (this acts as a default for the
+  account, if color is defined then the account will use that color at login)
+- added ability to have more whitespace in the access file (for example:
+  "user_0wn = 1" or "   user_0wn = 1" is now possible; previously only
+  "user_0wn=1" and "user_0wn= 1" was allowed)
+- fixed bug where you couldn't see the file transfer rate on Mac OS X
+  (note: configure with --enable-htxf-pthread)
+- fixed gcc warning when configured with --enable-htxf-pthread
+- find now prunes "Icon^M" files (^M is a carriage return)(these files are used
+  by the macintosh to display custom icons for folders)
+- fixed bug that caused all files/folders beginning with "Icon" to be pruned
+  rather than files named "Icon\r" (\r is a carriage return) to be pruned in
+  the file list
+- found a bug where output from the exec command (including find) was split
+  into 4K chunks, meaning if you did a large find you would get multiple
+  private messages. The solution was to remove the previously added feature
+  where exec output was relayed to private message and put it back to text so
+  that the output looks contigous
+- added a feature that makes exec output relay to the private chat the command
+  originated from (relays to public chat if originated from public chat)
+- increased login timeout to 60 seconds
+- rewrote find shell script! (works exactly as desired now)
+- added patch to configure.in to fix mdk8 readline problem (submitted by ZapF)
+- fixed bug in hx where irregular chat text being recieved was formatted
+  incorrectly (ex. an exec script says "echo hello;" hx says "<hello> hello")
+- fixed exec vulnerability (if the user started a lengthy exec process and then
+  logged out before the results were sent completely, the server crashed).
+- added hxd.config feature 'total_exec' and 'individual_exec' so that the
+  server can not be so easily brought down by overloading it with exec
+
+Version 0.1.43, August 6, 2001
+==============================
+- fixed bug with "hxd: <command>: command not found"
+- fixed bug with find ("find: /home/Software/files/: No such file or
+  directory")
+- reimplemented support to hide macintosh volume specific files/folders (don't
+  know how that one got lost before the final tarball, huh)
+- added comprehensive documentation on all the HXD commands
+- added documentation on all the access extras
+- removed the 'net' account
+- fixed gcc compile warnings
+
+Version 0.1.42, June 30, 2001
+=============================
+- added g0away and visible to 0wn chat command
+- added alert chat command
+- added '\' alternative chat command character
+- modified find chat command to be more efficient and verbose
+- rerouted exec output to private message
+- added support to hide macintosh volume specific files/folders
+- added help chat command displays a list of commands to the user
+- added default exec output to output "hxd: <command>: command not found" if an
+  unknown command is passed to the server
+- you can no longer get info on invisible users (this makes it more difficult
+  for some clients [hx, hotstuff, panorama] to see invisible users)
+- Added CARBON definition to detect the Carbon API on Mac OS X
+- Added /help <command> command to hx (get info on individual commands)
+
+Version 0.1.41, May 12, 2001
+============================
+
+Version 0.1.40, Mar 22, 2001
+============================
+- added hl 1.5 queue support in client (patch from someone)
+- removed --enable-ipv6 from gtkconf, as ipv4 will not work with it (misha)
+- added message to configure.in stating ipv6 support will disable ipv4 (misha)
+- fix crash when closing a private chat window with the mouse
+
+Version 0.1.39, Mar 10, 2001
+============================
+- add strip_ansi variable and colorz
+- fix resource fork uploading in netatalk
+
+Version 0.1.38, Feb 13, 2001
+============================
+- fix uid in chat
+- added /ignore and /unignore to hx (misha)
+
+Version 0.1.37, Feb 13, 2001
+============================
+- fix crash with nospam and uid in chat
+
+Version 0.1.36, Feb 13, 2001
+============================
+- fix crash in msg etc when not connected
+- fix wierd sizeof(struct u_int8_t *) in tracker.c
+- added IPv6 support (misha) [in progress]
+- fix selfinfo typos in server and client
+- check names of symbolic links for drop box
+
+Version 0.1.35, Feb 6, 2001
+============================
+- only use low 8 bits of cicn colormaps
+- fix random key changing for non compressed connections
+- added access and 0wn and mon chat commands
+- in chat, uid of sending user is now sent to all clients (misha)
+- fix pthread compile error in htxf.c
+
+Version 0.1.34, Jan 15, 2001
+============================
+- fix doubled chat on hxds with chat separator as '<'
+- tint icons depending on user's color in ghx
+- fix bug in accounts.c where no newline at the end of access files
+  causes crash.
+
+Version 0.1.33, Nov 17, 2000
+============================
+- fix bug in hxtrackd
+- fix alignment problems in hx
+
+Version 0.1.32, Nov 15, 2000
+============================
+- fix typo/segfault in hxtrackd
+- add tracker password length of 0 to tracker registration info
+  for canada.hltracker.com
+
+Version 0.1.31, Oct 25, 2000
+============================
+- fix small mem leak bugs in htxf threads
+- fix htxf-clone mem leak when file transfers are closed from htlc_close
+- real spinlocks for htxf-clone from linuxthreads
+
+Version 0.1.30, Oct 22, 2000
+============================
+- fix crash in rcv_chat if chat does not exist
+- fix crash in gtkhx when bookmark save is canceled
+- ignore SIGHUP in the htxf threads
+
+Version 0.1.29, Oct 18, 2000
+============================
+- initialize htxf->gone to 0 in server,
+  fix preview for files with resources (patch from Piotr Waskiewicz)
+- connection limit in nospam section
+
+Version 0.1.28, Oct 11, 2000
+============================
+- dont allow chat from clients not in the private chat.
+
+Version 0.1.27, Oct 11, 2000
+============================
+- fix possible mem/fd leak with htxf-clone.
+
+Version 0.1.26, Aug 9, 2000
+===========================
+- bug fixes
+
+Version 0.1.25, Jul 24, 2000
+============================
+- fix fd leak in htxf-clone
+
+Version 0.1.24, Jul 20, 2000
+============================
+- msg chat
+- patch for get info from Piotr Waskiewicz
+- fix bug in compress
+
+Version 0.1.23, Jul 15, 2000
+============================
+- stop calling decode if the connection was closed
+
+Version 0.1.22, Jul 15, 2000
+============================
+- clear htxf fd before running thread
+
+Version 0.1.21, Jul 15, 2000
+============================
+- fix bug in hxd_config.c
+
+Version 0.1.20, Jul 14, 2000
+============================
+- fix file transfer
+
+Version 0.1.19, Jul 14, 2000
+============================
+- fix compress bugs
+
+Version 0.1.18, Jul 14, 2000
+============================
+- chat passwords
+- compression
+
+Version 0.1.17, Jul 11, 2000
+===========================
+- bug fixes, code cleaning
+
+Version 0.1.16, Jul 4, 2000
+===========================
+- network changes
+- added secure/cipher to connect window
+- fix typo in news.c
+
+Version 0.1.15, Jun 30, 2000
+============================
+- use timer for tracker updates
+
+Version 0.1.15, Jun 29, 2000
+============================
+- fix timer bug (affected tracker updates)
+- fix hxd config alignment problems on 64 bit machines
+
+Version 0.1.14, Jun 22, 2000
+============================
+- network changes
+
+Version 0.1.13, Jun 21, 2000
+============================
+- fix hxd.conf reading
+- cipher section of hxd.conf, can use egd with openssl
+
+Version 0.1.12, Jun 20, 2000
+============================
+- bug fixes
+- use openssl libcrypto for cipher
+
+Version 0.1.11, Jun 18, 2000
+============================
+- added cipher
+- using 'Fold' for folder alias type was wrong
+
+Version 0.1.10, Jun 16, 2000
+============================
+- fix alignment problem in dh_getint
+- tab completion in gtk client
+- file info window, move menu
+
+Version 0.1.9, Jun 14, 2000
+===========================
+- control/alt key shortcuts
+- gtk bug/crash fixes
+
+Version 0.1.8, Jun 13, 2000
+===========================
+- "human readable" file sizes and transfer rates
+- context menus
+- soundset support
+- s/CONFG_NOSPAM/CONFIG_NOSPAM/ <rcv.c
+- hx_printf(htlc, ...) now hx_printf(htlc, chat, ...)
+
+Version 0.1.7, Jun 10, 2000
+==========================
+- download/upload/info/delete buttons now work
+- added xmmslib.c so dont haf to link with libxmms and pthread
+- fixed colormap problem with cicns (red info icon now blue)
+- smaller toolbar
+- new mac resource code
+
+Version 0.1.6, Jun 8, 2000
+==========================
+- added user editor
+- sql fixes, new sql conf
+- spam protection fixes, new spam conf
+- got rid of dhargs_buf
+- fix setting of name when password is not set in hxd accounts
+- added xmms trackname command
+
+Version 0.1.5, Jun 3, 2000
+==========================
+- send subject with main user list
+- fix timers
+
+Version 0.1.4, Jun 2, 2000
+==========================
+- send subject of chat on join
+- more private chat stuff
+
+Version 0.1.3, Jun 1, 2000
+==========================
+- fix problems in 0.1.2
+- can set subject of normal chat
+- some private chat stuff in ghx
+
+Version 0.1.2, May 30, 2000
+===========================
+- some multi connect bugs fixed.
+- got rid of gtkhx.xpm
+
+Version 0.1.1, May 28, 2000
+===========================
+- file xfers in tasks window.
+- changed timer interface.
+
+Version 0.1.0, May 27, 2000
+===========================
+- lots more gtk stuff.
+
+Version 0.0.111, March 13, 2000
+===============================
+- fixed tlist, /tracker for machines where char = signed char
+- use htlc->fd instead of htlc->uid in FD_SET
+  (fix private chat bugs when uid > FD_SETSIZE (1024))
+- tracker now considers addr:port and addr:other port to be different servers.
+- fix global out_Bps limit.
+
+Version 0.0.110, February 19, 2000
+==================================
+- client sends packets with incrementing transaction number.
+- server sends packets with last transaction number for tasks,
+  else number from seperate transaction counter.
+- kick users who send 16 lines to chat in less than 5 seconds,
+  disable by undefining NOSPAM in hxd.h
+- added CONFIG_SQL
+
+Version 0.0.109, February 9, 2000
+=================================
+- client sends packets with same transaction number.
+- server sends packets with last transaction number for tasks, else 0
+
+Version 0.0.108, January 23, 2000
+=================================
+- fix bogus pointer reference in chat_remove_from_all
+- ident is now enabled in config file.
+
+Version 0.0.107, January 16, 2000
+=================================
+- fix times in getinfo for clients that do not know when 1904 is.
+
+Version 0.0.106, January 15, 2000
+=================================
+- add visible/color commands to hxd.
+- add extra access file for each account.
+
+Version 0.0.105, January 13, 2000
+=================================
+- fix typo in fd.c
+
+Version 0.0.104, January 9, 2000
+================================
+- add tracker_banlist to hxd_config.c
+- out_Bps can be used in config of an account.
+- sound is off by default, turn on with snd -O
+
+Version 0.0.103, December 30, 1999
+==================================
+- fix htxf-pthread.
+
+Version 0.0.102, December 27, 1999
+==================================
+- clear identfd from wfds in ident_close to prevent bad file descriptors from being passed to select.
+- more file stuff is logged.
+
+Version 0.0.101, December 26, 1999
+==================================
+- fixed bug in hxd config reading.
+- added htxf-pthread stuff, doesnt work yet.
+- more gtk stuff.
+
+Version 0.0.100, December 26, 1999
+==================================
+- fixed up gtk thing.
+
+Version 0.0.99, December 26, 1999
+=================================
+- added tracker passwords.
+- added GTK chat/console thingy, but has problems with gtk and threads ..
+
+Version 0.0.98, December 14, 1999
+=================================
+- added sound to the client (patch from Piotr Waskiewicz).
+
+Version 0.0.97, December 11, 1999
+=================================
+- fixed file security holes :(
+- added dropbox for each login.
+
+Version 0.0.96, December 8, 1999
+================================
+- download/upload now work on macosx in hxd, apparently they dont work in the client.
+
+Version 0.0.95, December 7, 1999
+================================
+- accidentally used non blocking for htlc connects in 0.0.91, fixed.
+
+Version 0.0.94, December 6, 1999
+================================
+- fix endian problem in tracker banlist.
+
+Version 0.0.93, December 5, 1999
+================================
+- added banlist to tracker server.
+
+Version 0.0.92, December 3, 1999
+================================
+- make sure htlc_close is not called with a bogus pointer in check_banlist.
+
+Version 0.0.91, November 27, 1999
+=================================
+- upload now works to a directory with no cached file list.
+- non blocking upload/download/tracker connects.
+
+Version 0.0.90, November 26, 1999
+=================================
+- add 1 second timer between download attempts.
+
+Version 0.0.89, November 13, 1999
+=================================
+- symbolic link HFS files along with file in rcv_file_symlink.
+- comment_write was writing comment in the wrong place, fixed.
+- client stores/uploads file date correctly.
+
+Version 0.0.88, October 29, 1999
+================================
+- dont bother sending default comment in client.
+- added traffic shaping.
+- dont exit when cant resolve tracker address.
+
+Version 0.0.87, September 20, 1999
+==================================
+- send comment correctly in htxf header.
+
+Version 0.0.86, September 4, 1999
+=================================
+- new version!
+
+Version 0.0.85, August 9, 1999
+==============================
+- added dumb terminal mode.
+
+Version 0.0.84, August 7, 1999
+==============================
+- downloading resource forks from AppleDouble files should work.
+
+Version 0.0.83, August 6, 1999
+==============================
+- added more AppleDouble/Netatalk support.
+
+Version 0.0.82, August 2, 1999
+==============================
+- added CONFIG_HFS and some AppleDouble/Netatalk support .. does not work yet.
+- added misc/comment2cap.c to convert old .comment dirs to CAP .finderinfo
+- added locale support and some fixes to string expansion.
+
+Version 0.0.81, July 28, 1999
+=============================
+- do not use floating point.
+- misc fixes.
+
+Version 0.0.80, July 24, 1999
+=============================
+- the files changes in .78 were broken, fixed.
+
+Version 0.0.79, July 22, 1999
+=============================
+- fixed some problems with xf* commands.
+
+Version 0.0.78, July 21, 1999
+=============================
+- use cap for hfs stuff, mac file dates should work.
+
+Version 0.0.77, July 20, 1999
+=============================
+- really do not recursively remove real dirs when removing symlink.
+
+Version 0.0.76, July 20, 1999
+=============================
+- added local globbing to put.
+- can now use filter in get -R.
+
+Version 0.0.75, July 20, 1999
+=============================
+- do not recursively remove real dirs when removing symlink.
+- added -R (recursive) option to get and ls.
+- fixed bug where a timer would expire too fast if it was the only timer.
+
+Version 0.0.74, July 12, 1999
+=============================
+- added xfgo and xfkill commands, -t (filter through tr \r \n) option to get.
+- some hacks to get it working on hpux.
+- added default file comment to config.
+
+Version 0.0.73, July 9, 1999
+============================
+- null terminate strings in hxd_cfg.
+
+Version 0.0.72, July 8, 1999
+============================
+- fix crash when listing dirs with more then MAXPATHLEN entries (!@!@$)
+- can now "move" files across devices.
+- gcc on OpenBSD does not like u_int16_t hc, ... in hlwrite, changed to int.
+
+Version 0.0.71, July 6, 1999
+============================
+- added code to make broken windos clients not display error messages when transfering files.
+  (--enable-windos-client-fix)
+
+Version 0.0.70, June 25, 1999
+=============================
+- misc not very important changes.
+
+Version 0.0.69, June 19, 1999
+=============================
+- only send news posts to users with the same newsfile.
+- fixed more completion bugs, added chats command.
+
+Version 0.0.68, June 16, 1999
+=============================
+- decrement nr_gets/puts in htlc_close.
+
+Version 0.0.67, June 15, 1999
+=============================
+- added clock.
+- added resume upload to client.
+- fixed some problems with filename/nick completion.
+
+Version 0.0.66, June 14, 1999
+=============================
+- fixed bug in ident.c
+- fixed bugs in chat.c
+
+Version 0.0.65, June 13, 1999
+=============================
+- added strptime.c
+- define MAXPATHLEN if it is not defined.
+- securelogin/hope fixes.
+- free xfer spot when xfer fails before forking.
+
+Version 0.0.64, June 8, 1999
+============================
+- fixed some memory leaks in reading the config file from sig_hup.
+- added CONFIG_NETWORK code, disabled by default, does not work well yet.
+- tracker server works better with some clients (??)
+
+Version 0.0.63, June 5, 1999
+============================
+- hxd is now bug free. really.
+
+Version 0.0.62, June 4, 1999
+============================
+- fixed another timer bug/mem leak.
+
+Version 0.0.61, June 3, 1999
+============================
+- fixed memory/fd leak in timer_register_init when called from sig_hup.
+
+Version 0.0.60, June 3, 1999
+============================
+- fixed tracker-register memory/timer leak.
+- added subject command.
+
+Version 0.0.59, May 31, 1999
+============================
+- fixed some banlist bugs, removed the allow crap.
+
+Version 0.0.58, May 30, 1999
+============================
+- added allow/deny/expires to banlist.
+- fixed typo in rcv_user_getinfo.
+
+Version 0.0.57, May 29, 1999
+============================
+- use sha code from lsh.
+- added banlist.
+
+Version 0.0.56, May 28, 1999
+============================
+- fixed typo that caused put to exit incorrectly.
+- fixes for nextstep.
+- removed some unused code.
+- added misc/bmfind.c
+
+Version 0.0.55, May 25, 1999
+============================
+- added nusers to tracker config.
+
+Version 0.0.54, May 23, 1999
+============================
+- added xfer queuing.
+- timer fixes.
+
+Version 0.0.53, May 15, 1999
+============================
+- tracker fixes.
+
+Version 0.0.52, May 13, 1999
+============================
+- fix segfault in msg.
+
+Version 0.0.51, May 11, 1999
+============================
+- compile fixes.
+
+Version 0.0.50, May 9, 1999
+===========================
+- fix away timer to work with tasks.
+
+Version 0.0.49, May 8, 1999
+===========================
+- setgid before setuid.
+
+Version 0.0.48, May 8, 1999
+===========================
+- fix problems with read/write returning 0.
+- added set[ug]id/detach code.
+- /away works agin.
+
+Version 0.0.47, May 7, 1999
+===========================
+- added timer code, away timer.
+- do not send file info for the root files dir.
+
+Version 0.0.46, May 6, 1999
+===========================
+- use return value of waitpid correctly.
+
+Version 0.0.45, May 4, 1999
+===========================
+- no more EMFILE errors when deleting directories.
+- optimize hx_term.c a little.
+
+Version 0.0.44, May 2, 1999
+===========================
+- uses all addresses of config.
+- added ident.c
+- anyone can upload to drop boxes.
+- put works again.
+
+Version 0.0.43, April 29, 1999
+==============================
+- compilation/bug fixes.
+
+Version 0.0.42, April 25, 1999
+==============================
+- added resume download to the client.
+- added xfers command.
+- lots of bug fixes.
+
+Version 0.0.41, April 19, 1999
+==============================
+- added misc/acctedit.c, crude but it works.
+- removed CONFIG_CIPHER
+- uses latest draft of HOPE secure login.
+
+Version 0.0.40, April 15, 1999
+==============================
+- resume should work with windows client.
+- use sysconf/getrlimit/getdtablesize instead of OPEN_MAX
+
+Version 0.0.39, April 12, 1999
+==============================
+- configure problems fixed.
+- sha1 code cleaned up.
+
+Version 0.0.38, April 11, 1999
+==============================
+- added CONFIG_CIPHER
+- added file permissions to config.
+
+Version 0.0.37, April 8, 1999
+=============================
+- now builds hxd, hx, hxtrackd into seperate binaries.
+- minor bug fixes.
+- change CONFIG_HASH to CONFIG_HOPE, added securelogin stuff.
+
+Version 0.0.36, April 7, 1999
+=============================
+- do not send agreement before acking login.
+- fix mkdir for systems without realpath.
+- support cant_be_disconnected.
+- added interval (seconds between sending server info to tracker) to tracker config.
+- another bug with more then one file xfer fixed.
+
+Version 0.0.35, April 5, 1999
+=============================
+- added ln command (remote symbolic link).
+- added basename.c.
+- fixed where hxd would try to bind to a tracker address.
+- alignment fix in file listing.
+- fixed bugs with more than one file download or upload.
+
+Version 0.0.34, April 1, 1999
+=============================
+- bug fixes in files.c, put command, tab completion.
+- use qsort to sort files.
+- added misc/tlist.c
+
+Version 0.0.33, April 1, 1999
+=============================
+- does not try to read resource length in htxf from windows server.
+- added help command, just lists commands now.
+
+Version 0.0.32, April 1, 1999
+=============================
+- added tracker command.
+
+Version 0.0.31, March 31, 1999
+==============================
+- bug fixed (typo -> segfault).
+- now have to use --enable-hash to use rcv_file_hash, md5, sha1.
+
+Version 0.0.30, March 31, 1999
+==============================
+- added remote filename globbing.
+- mv command works better.
+
+Version 0.0.29, March 28, 1999
+==============================
+- added MegaHAL.
+- added hostname command.
+- better remote filename completion.
+- can now download/upload more than 1 file at a time.
+- account specific conf file in accounts/login/conf.
+
+Version 0.0.28, March 27, 1999
+==============================
+- added basic file list caching and remote filename completion.
+- added haval and sha-1 code.
+- macbin can now decode macbinary files.
+- now acknowledges successful completion of an account deleted.
+
+Version 0.0.27, March 15, 1999
+==============================
+- fixed put, added resume to get.
+- added away with logging.
+
+Version 0.0.26, March 6, 1999
+=============================
+- use hxd_environ instead of environ.
+- added download and upload to client, no resume yet.
+
+Version 0.0.25  March 2, 1999
+=============================
+- download problems with mac client fixed, was not adding comment length to total size.
+
+Version 0.0.24  March 1, 1999
+=============================
+- use the options.port and options.addresses from hxd.conf.
+
+Version 0.0.23  February 28, 1999
+=================================
+- added hxd.conf.
+- exec dir changed from "bin" to "exec", accounts dir changed from "users" to "accounts".
+- can register with multiple trackers.
+- better logging.
+
+Version 0.0.22  February 26, 1999
+=================================
+- reads comment correctly from upload.
+- writes posted news to file with CRs converted to LFs.
+- client strips ansi garbage from chat, msg, etc.
+
+Version 0.0.21  February 21, 1999
+=================================
+- added comment support (.comment dirs).
+- rcv_file_setinfo now renames .finderinfo and .comment files.
+
+Version 0.0.20  February 15, 1999
+=================================
+- resume download problems with mac client fixed, was sending wrong total size.
+- fixed typo in files.c, rcv_file_setinfo, was using fnlen instead of newfnlen.
+- can now use different news file for different accounts. removed newsdir.
+
+Version 0.0.19  February 12, 1999
+================================
+- _NEWS_FILE changed from "./news.txt" to "./news", _NEWS_DIR now "./newsdir".
+- fixed resume download bug.
+- added check for hstrerror and broken snprintf.
+
+Version 0.0.18  February 5, 1999
+================================
+- changed echo $@ to echo "$@" in bin/echo.
+- tab now expands nicknames after /msg.
+
+Version 0.0.17  February 4, 1999
+=================================
+- fixed typo in hlserver.c, was dereferencing htxf_out instead of htxf_in, when htxf_out could be NULL.
+- fixed SIGCHLD handler to save/restore errno.
+- added more to the client ...
+
+Version 0.0.16  January 15, 1999
+================================
+- struct hl_access_bits is now 64 bits, added can_broadcast.
+- fixed bug in rcv_account_create where access would be wrong if not after the last data header.
+- added rcv_msg_broadcast.
+- added file preview with image minification (needs ImageMagick).
+- read/write file type/creator from/to .finderinfo.
+- _NEWS_FILE changed from "./news" to "./news.txt", _NEWS_DIR now "./news".
+- _ACCOUNTS_DIR changed from "./accounts" to "./users".
+- _EXEC_DIR changed from "./cgi-bin" to "./bin".
+- resume upload now works.
+
+Version 0.0.15  January 5, 1999
+===============================
+- created CHANGES file.
