@@ -1,0 +1,277 @@
+Version 0.2.9, March 3, 2004
+============================
+- fixed a buffer overflow in htrk_send_list of tracker.c:301 caused by not
+  properly reallocating the buffer before annexing secondary tracker headers
+  which are sent after 8K of data
+
+Version 0.2.8, February 21, 2004
+================================
+- fixed buffer overflow when reading ./etc/custom_list
+- fixed bug that caused the last line of custom_list to be ignored
+- "recvfrom: connection reset by peer" is no longer logged
+- you can now put a newline after the comma before the description to signify
+  that there is no description (before you had to put something, like a space)
+
+Version 0.2.7, February 7, 2004
+===============================
+- fixed mid-buffered read with custom_list if the file was over 1024 characters
+- added "log_incorrect_password", "log_banned_register", and "log_banned_list"
+  to the log section of etc/hxtrackd.conf (all logging is disabled by default)
+- added "ignore_passwords" option to tracker section of etc/hxtrackd.conf
+- added address:port to bind error log entry
+- added address to recvfrom error log entry in tracker_udp_ready_read
+- port 5500 is now used as a default if no port is specified in etc/custom_list
+
+Version 0.2.6, January 22, 2004
+===============================
+- moved configuration files to ./etc
+- added conditional compilation of hxd port checking in tracker.c (enabled
+  by default)
+- added ./etc/custom_list (and path to hxtrackd.conf) for creating custom
+  list entries that appear atop the list
+- known bug, using ip's that start with 0 in custom_list cause problems
+
+Version 0.2.5, September 19, 2003
+=================================
+- fixed duplicate entry bug (details: for security purposes, the tracker was
+  expecting that all registrations be done over a single socket and would
+  therefore have the same source port each time. This would mean that the
+  tracker listing could only be spoofed if an attacker were to try spoofing
+  the address and discover the source port eventually by trying all 65535
+  possibilities. the tracker was to create a single listing for each ip/source-
+  port combination. however, this creates duplicates when an official server
+  registers because the registrations are not done over a single socket. the
+  software closes and re-opens a new socket each time causing a new source port
+  to be used, hence causing a new entry to appear. Multiple entries were
+  visible because the hotline server would register again before the last
+  registration expired). I do not consider this as a bug but a security
+  feature which must be removed because of insecure official software. I have
+  actually come up with a happy medium. hxd servers send an id of 0 so they
+  are identifiable. So hxd servers will still be required to use a single
+  socket and will not be spoofable while servers who report an id of non zero
+  will be interrogated as to the port of the hotline server they are
+  registering.)
+
+Version 0.2.4, September 17, 2003
+============================
+- fixed cpu bug caused by not clearing closed client connections
+- added port options to hxtrackd.conf
+- added log section to hxtrackd.conf to customize verbosity level
+
+Version 0.2.3, June 25, 2003
+============================
+- added logging of password usage
+- fixed bug with client banlist allowing a banned address to still get a list
+- fixed one byte name overflow in registration logging
+
+Version 0.2.2, June 7, 2003
+===========================
+- fixed port/users part of new registrations log entry
+
+Version 0.2.1, June 7, 2003
+===========================
+- added more robust logging (logs on: new server registration, registration
+  expiration, incorrect passwords, requests from banned users and malformed
+  datagram errors)
+- fixed compiler warning of implicit declaration of inet_ntoa_r in tracker.c
+  when the system did not provide the function
+- added client_banlist for denying specific addresses the ability to list
+
+Version 0.2, Feb 4, 2003
+========================
+- removed hxd, hx, ghx, code from hxtrackd; making it a seperate source archive
+- fixed support for non-passworded registration
+- pruned configuration file for just tracker server settings
+- added max_users to the configuration file
+- renamed the configuration file to hxtrackd.conf
+- rewrote configure/make process files and implemented source subdirectories
+- changed password setting in conf file to string array
+- added support for multiple passwords
+- documented the configuration file a little better with comments
+
+Version 0.1.36, Feb 13, 2001
+============================
+- fix wierd sizeof(struct u_int8_t *) in tracker.c
+
+Version 0.1.33, Nov 17, 2000
+============================
+- fix bug in hxtrackd
+
+Version 0.1.32, Nov 15, 2000
+============================
+- fix typo/segfault in hxtrackd
+
+Version 0.1.26, Aug 9, 2000
+===========================
+- bug fixes (tracker_timer() in tracker.c changed to timer_add_secs())
+
+Version 0.1.21, Jul 15, 2000
+============================
+- fix bug in hxd_config.c
+
+Version 0.1.17, Jul 11, 2000
+===========================
+- bug fixes, code cleaning
+
+Version 0.1.16, Jul 4, 2000
+===========================
+- network changes
+
+Version 0.1.15, Jun 30, 2000
+============================
+- use timer for tracker updates
+
+Version 0.1.15, Jun 29, 2000
+============================
+- fix timer bug (affected tracker updates)
+- fix hxd config alignment problems on 64 bit machines
+
+Version 0.1.14, Jun 22, 2000
+============================
+- network changes
+
+Version 0.1.13, Jun 21, 2000
+============================
+- fix hxd.conf reading
+
+Version 0.1.12, Jun 20, 2000
+============================
+- bug fixes
+
+Version 0.1.5, Jun 3, 2000
+==========================
+- fix timers
+
+Version 0.1.1, May 28, 2000
+===========================
+- changed timer interface.
+
+Version 0.0.111, March 13, 2000
+===============================
+- fixed tlist, /tracker for machines where char = signed char
+- tracker now considers addr:port and addr:other port to be different servers.
+- fix global out_Bps limit.
+
+Version 0.0.104, January 9, 2000
+================================
+- add tracker_banlist to hxd_config.c
+
+Version 0.0.101, December 26, 1999
+==================================
+- fixed bug in hxd config reading.
+
+Version 0.0.99, December 26, 1999
+=================================
+- added tracker passwords.
+
+Version 0.0.94, December 6, 1999
+================================
+- fix endian problem in tracker banlist.
+
+Version 0.0.93, December 5, 1999
+================================
+- added banlist to tracker server.
+
+Version 0.0.86, September 4, 1999
+=================================
+- new version!
+
+Version 0.0.81, July 28, 1999
+=============================
+- misc fixes.
+
+Version 0.0.75, July 20, 1999
+=============================
+- fixed bug where a timer would expire too fast if it was the only timer.
+
+Version 0.0.74, July 12, 1999
+=============================
+- some hacks to get it working on hpux.
+
+Version 0.0.73, July 9, 1999
+============================
+- null terminate strings in hxd_cfg.
+
+Version 0.0.70, June 25, 1999
+=============================
+- misc not very important changes.
+
+Version 0.0.64, June 8, 1999
+============================
+- fixed some memory leaks in reading the config file from sig_hup.
+- tracker server works better with some clients (??)
+
+Version 0.0.62, June 4, 1999
+============================
+- fixed another timer bug/mem leak.
+
+Version 0.0.61, June 3, 1999
+============================
+- fixed memory/fd leak in timer_register_init when called from sig_hup.
+
+Version 0.0.60, June 3, 1999
+============================
+- fixed tracker-register memory/timer leak.
+
+Version 0.0.55, May 25, 1999
+============================
+- added nusers to tracker config.
+
+Version 0.0.54, May 23, 1999
+============================
+- timer fixes.
+
+Version 0.0.53, May 15, 1999
+============================
+- tracker fixes.
+
+Version 0.0.51, May 11, 1999
+============================
+- compile fixes.
+
+Version 0.0.49, May 8, 1999
+===========================
+- setgid before setuid.
+
+Version 0.0.48, May 8, 1999
+===========================
+- fix problems with read/write returning 0.
+- added set[ug]id/detach code.
+- /away works agin.
+
+Version 0.0.47, May 7, 1999
+===========================
+- added timer code, away timer.
+
+Version 0.0.44, May 2, 1999
+===========================
+- uses all addresses of config.
+
+Version 0.0.43, April 29, 1999
+==============================
+- compilation/bug fixes.
+
+Version 0.0.42, April 25, 1999
+==============================
+- lots of bug fixes.
+
+Version 0.0.40, April 15, 1999
+==============================
+- use sysconf/getrlimit/getdtablesize instead of OPEN_MAX
+
+Version 0.0.39, April 12, 1999
+==============================
+- configure problems fixed.
+
+Version 0.0.37, April 8, 1999
+=============================
+- now builds hxd, hx, hxtrackd into seperate binaries.
+- minor bug fixes.
+
+Version 0.0.34, April 1, 1999
+=============================
+- added misc/tlist.c
+
+Version 0.0.15  January 5, 1999
+===============================
+- created CHANGES file.

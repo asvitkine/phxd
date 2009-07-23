@@ -1,0 +1,19 @@
+# Put the IP or partial IP (pattern) of any servers that you wish to deny
+# access to register on your tracker. One IP address per line.
+#
+# Lines that begin with `#' are ignored as comments.
+
+# Example:
+#   127.0.0.*
+
+# private network addresses
+# these occur mostly by hlserver admins registering on their own trackers
+# running within a private network... inadvertenly causing this ip to register
+192.168.*
+
+# local network addresses
+# these occur mostly by hlserver admins registering on their own trackers
+# running on the same machine... inadvertenly causing this ip to register
+127.0.0.*
+
+

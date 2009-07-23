@@ -1,0 +1,6 @@
+Things to do and ideas:
+
+- Make an option to only allow one server per password
+- Add anti-spam support to ban people listing too often, or registering too
+  often (this will solve the problem of people setting their hxd to register
+  too quickly, causing a DoS effect).

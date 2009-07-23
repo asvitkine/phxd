@@ -1,0 +1,14 @@
+# Custom list entries. Entries will appear at the top of the list in order
+# as they appear in this file.
+#
+# Format:  ip/host:port,name,users,description
+# example: 1.2.3.4:5500,foobar,0,your message here.
+#
+# Lines beginning with `#' will be ignored. Spaces in between commas will not
+# be ignored. For example, "127.0.0.1:5500, localhost, 5, my computer" will
+# have a space at the beginning of the name and description and the users will
+# be considered an invalid number.
+#
+# You can optionally not put the port, and 5500 will be used by default.
+
+shxd.ath.cx,shxtrackd-0.2.9 by Devin Teske,0,http://synhxd.sourceforge.net

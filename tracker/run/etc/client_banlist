@@ -1,0 +1,16 @@
+# Put the IP or partial IP (pattern) of any clients that you wish to deny
+# access to the tracker list. One IP address per line.
+#
+# Lines that begin with `#' are ignored as comments.
+
+# Example:
+#   127.0.0.*
+
+# thereaper.dynip.com is a mirroring tracker
+192.82.7.*
+
+# tracker.no-ip.net is a mirroring tracker
+81.79.51.*
+81.79.190.*
+81.77.82.*
+

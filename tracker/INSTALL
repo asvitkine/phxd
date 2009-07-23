@@ -1,0 +1,87 @@
+Requirements:
+=============
+
+   ANSI C Compiler (like gcc)
+
+
+Quick and Dirty:
+================
+
+   To compile it:
+
+      $ ./configure
+      $ make
+
+   To run it (you won't be able to use your shell after this):
+
+      $ cd run
+      $ ./hxtrackd
+
+   To run it in the background (this will return your shell to you):
+
+      $ ./hxtrackd &
+
+
+Details:
+========
+
+   To get info on available options for configure:
+
+      $ ./configure --help
+
+   The syntax for the daemon:
+
+      hxtrackd [-d] [-f hxtrackd.conf]
+
+      Options:
+         -f     the config file hxtrackd should use
+                     (defaults to `./etc/hxtrackd.conf')
+
+         -d     detach from associated terminal (run in background)
+                     (this is the same as saying `./hxtrackd &')
+
+
+Info:
+=====
+
+   After you run make, hxtrackd will be in the `run' directory. You can
+   simply copy this directory anywhere you want. It contains all
+   the files necessary to run hxtrackd (or run `make install' to install
+   it into /usr/local/hxtrackd').
+
+
+Make Directives:
+================
+
+   Compile the requested items from ./configure:
+   
+      $ make
+
+   Install hxtrackd:
+
+      $ make install
+
+   Delete all the compiled object files (*.o files) and core dump files:
+
+      $ make clean
+
+   Return the folder back to it's initial state:
+
+      $ make distclean
+
+   Create a tarball of the source
+
+      $ make tgz
+
+   Similar to above
+
+      $ make targz
+
+
+Contact:
+========
+
+   Author: Devin Teske  <devinteske@hotmail.com>
+
+   There is a mailing list thanks to Age Manocchia, to subscribe,
+   see http://www.hockey.cornell.edu:8100/Lists/hxd-l/List.html

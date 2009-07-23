@@ -1,0 +1,76 @@
+#
+# hxtrackd-0.1.41 makefile script
+# January 27, 2003
+# Devin Teske <devinteske@hotmail.com>
+#
+
+srcdir   = @srcdir@
+
+CC       = @CC@
+
+RM       = @RM@
+SHELL    = /bin/sh
+
+# Where to install
+prefix   = @prefix@
+exec_suffix = @exec_suffix@
+
+SUBDIRS  = src
+
+mkfldep  = configure config.status makefile.in \
+           include/config.h.in src/Makefile.in \
+           include/version.h
+
+noargs: all
+
+all: makefile
+	@for dir in $(SUBDIRS); do \
+	   echo "Making $@ in $$dir..."; \
+	   (cd $$dir ; $(MAKE) $(MFLAGS) prefix="$(prefix)" $@) || exit 1; \
+	done
+
+install: makefile
+	@for dir in $(SUBDIRS); do \
+	   echo "Making $@ in $$dir..."; \
+	(cd $$dir ; $(MAKE) $(MFLAGS) prefix="$(prefix)" $@); \
+	done
+	@echo "installation: installing into $(prefix)"
+	@if [ ! -e "$(prefix)" ]; then \
+	   cp -Rf run $(prefix); \
+	fi
+	@echo "complete."
+
+clean:
+	@for dir in $(SUBDIRS); do \
+	   echo "Making $@ in $$dir..."; \
+	   (cd $$dir ; $(MAKE) $(MFLAGS) prefix="$(prefix)" $@); \
+	done
+
+almostclean: clean
+	$(RM) -f config.log makefile include/config.h
+	@for dir in $(SUBDIRS); do \
+	   echo Making distclean in $$dir; \
+	   (cd $$dir; $(MAKE) $(MFLAGS) prefix="$(prefix)" distclean); \
+	done
+
+distclean:
+	$(RM) -f config.log makefile include/config.h config.status \
+	         config.cache run/log run/hxtrackd$(exec_suffix)
+	@for dir in $(SUBDIRS); do \
+	   echo Making distclean in $$dir; \
+	   (cd $$dir; $(MAKE) $(MFLAGS) prefix="$(prefix)" distclean); \
+	done
+
+targz: distclean
+	tar cvf current.tar . ; gzip current.tar
+
+tgz: distclean
+	tar czfv current.tgz .
+
+makefile: $(mkfldep)
+	@echo "Package configuration updated. Cleaning and reconfiguring" ;\
+	./config.status --recheck;\
+	./config.status ;\
+	$(MAKE) $(MFLAGS) clean
+
+depend:

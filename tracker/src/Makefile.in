@@ -1,0 +1,55 @@
+#
+# hxtrackd-0.1.41 makefile script
+# January 27, 2003
+# Devin Teske <devinteske@hotmail.com>
+#
+
+srcdir          = @srcdir@
+
+# Where to install
+prefix          = @prefix@
+
+# settings from configure
+exec_suffix     = @exec_suffix@
+top_srcdir      = @top_srcdir@
+
+# Gotta love the DOS legacy
+#
+TRACKER_EXE     = $(top_srcdir)/run/hxtrackd$(exec_suffix)
+
+CC              = @CC@
+
+LDFLAGS         = @LDFLAGS@
+INCLUDE         = -I$(top_srcdir)/include
+CFLAGS          = @CFLAGS@ $(INCLUDE)
+
+# Objects
+TRACKER_OBJS    = fd.o version.o xmalloc.o hxd_config.o main.o \
+                  tracker.o @LIBOBJS@ @TRACKER_OBJS@
+
+# Build Targets
+TARGETS         = $(TRACKER_EXE) @TARGETS@
+
+RM              = @RM@
+SHELL           = /bin/sh
+
+############################################### Rules
+
+noargs: all
+
+all: $(TARGETS)
+
+install:
+
+.c.o .cc.o:
+	$(CC) -c $(CFLAGS) $<
+
+$(TRACKER_EXE): $(TRACKER_OBJS)
+	$(CC) $(LDFLAGS) $(DEFS) $(TRACKER_OBJS) -o $@
+	@echo "make: success -> binary should be in \`run'"
+
+clean:
+	$(RM) -f *.o
+
+distclean:
+	$(RM) -f *.o Makefile

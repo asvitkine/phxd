@@ -1,0 +1,309 @@
+#
+# shxd-0.2 configure script
+# Februrary 2, 2002
+# Devin Teske <devinteske@hotmail.com>
+#
+# $Id: configure.in,v 2.0 2001/09/05 3:15:18 teske Exp $
+#
+
+AC_INIT(include/main.h)
+AC_PREREQ(2.12)
+AC_REVISION($Revision: 2.0 $)
+AC_CONFIG_HEADER(include/config.h)
+AC_PREFIX_DEFAULT(/usr/local/shxtrackd)
+AC_CONFIG_AUX_DIR(cfgaux)
+
+AC_CANONICAL_HOST
+
+# add a .exe suffix to the binary if we are on a win32 host
+case "$host_os" in
+cygwin|cygwin32|os2)
+   exec_suffix=".exe"
+   ;;
+*)
+   exec_suffix=""
+   ;;
+esac
+AC_SUBST(exec_suffix)
+
+AC_DEFINE_UNQUOTED(CONFIG_HOST_TYPE, "$host")
+
+# Substitutions
+AC_SUBST(CFLAGS)
+AC_SUBST(TARGETS)
+AC_SUBST(TRACKER_OBJS)
+AC_SUBST(CDEFS)
+
+# Set default LDFLAGS
+if test -z "$LDFLAGS"; then
+   LDFLAGS="-g"
+fi
+
+PRESET_CFLAGS="$CFLAGS"
+
+# Check for GNU cc
+AC_PROG_CC
+
+if test $cross_compiling = yes; then
+   AC_CHECK_PROGS(BUILD_CC, gcc cc)
+   CC=$BUILD_CC
+fi
+
+# Check for ISC POSIX for additional arguments to compiler
+AC_ISC_POSIX
+
+# Gerben Wierda <Gerben_Wierda@RnA.nl>
+case "$host" in
+   mab-next-nextstep3)
+   CC="$CC -arch m68k -arch i486 -arch hppa -arch sparc"
+   ;;
+esac
+
+# Set Default CFLAGS
+if test -z "$PRESET_CFLAGS"; then
+   if test "$GCC" = "yes"; then
+      case "$host" in
+      *-sun-sunos*)
+         # sunos has too many warnings for this to be useful
+         # motorola too
+         ;;
+      *m88k*)
+         # Motorola cc/ld does not like -02 but is ok on -O
+         CFLAGS=`echo $CFLAGS | sed -e 's/-O[0-9]/-O/'`
+         ;;
+      *)
+         CFLAGS="$CFLAGS -Wall"
+         ;;
+      esac
+   else
+      case "$host" in
+      *mips-sgi-irix6.*)
+         # suggested by Rafael Seidl <rafaels@cthulhu.engr.sgi.com>
+         CFLAGS="$CFLAGS -n32 -mips3 -O3 -OPT:Olimit=0:space=OFF \
+         -woff 1009,1014,1048,1110,1116,1185,1188,1204,1230,1233 \
+         -Wl,-woff,85,-woff,84,-woff,134 \
+         -nostdinc -I/usr/include -D_BSD_SIGNALS"
+         ;;
+      alpha-dec-osf4.*)
+         # Mogul says DEC compilers take both -g and -O2
+         CFLAGS=`echo $CFLAGS | sed -e 's/-g/-g3/'`
+         CFLAGS="$CFLAGS -O2"
+         ;;
+      *)
+         ;;
+      esac
+   fi
+fi
+
+# Set LDFLAGS
+if test -z "$PRESET_LDFLAGS"; then
+   if test "$GCC" = "yes"; then
+      case "$host" in
+      *)
+         # nothing
+         ;;
+      esac
+   else
+      case "$host" in
+      *mips-sgi-irix6.*)
+         # suggested by Rafael Seidl <rafaels@cthulhu.engr.sgi.com>
+         LDFLAGS="-n32 -mips3 -nostdlib -L/usr/lib32"
+         ;;
+      esac
+   fi
+fi
+
+# list of default makefiles to produce:
+makefiles="\
+   ./makefile         \
+   ./src/Makefile     "
+
+# Enable optional modules
+echo "Enable Options:"
+echo ""
+
+AC_ARG_ENABLE(warnings,
+[  --enable-warnings          Show compiler warnings],
+[ if test "$enableval" = "no" ; then
+   CFLAGS=`echo $CFLAGS | sed -e 's/\ -Wall//'`
+   CFLAGS="-w $CFLAGS"
+  else
+   echo "   Compiler warnings enabled"
+  fi
+],
+[ CFLAGS=`echo $CFLAGS | sed -e 's/\ -Wall//'`
+  CFLAGS="-w $CFLAGS"
+])
+
+echo "   Tracker server enabled"
+
+AC_ARG_ENABLE(socket-linger,
+[  --enable-socket-linger     enable the SO_LINGER socket option],
+[ if test "$enableval" = "yes" ; then
+   echo "   Linger socket option enabled"
+   AC_DEFINE(SO_LINGER)
+   CDEFS="$CDEFS -DSO_LINGER"
+  fi
+])
+
+AC_ARG_ENABLE(xmalloc-debug,
+[  --enable-xmalloc-debug     Do some simple malloc debugging],
+[ if test "$enableval" = "yes" ; then
+   echo "   Malloc debugging enabled"
+   AC_DEFINE(XMALLOC_DEBUG)
+  fi
+])
+
+AC_ARG_ENABLE(ipv6,
+[  --enable-ipv6              IPv6 support. IPv4 will not work],
+[ if test "$enableval" = "yes" ; then
+   echo "   IPv6 enabled"
+   AC_DEFINE(CONFIG_IPV6)
+  fi
+])
+
+echo ""
+
+
+# Force some compilers to use ANSI features
+case "$host" in
+alpha-dec-osf*)
+   if test "$ac_cv_prog_CC" = "cc" ; then
+      echo "adding '-std1' to cc args for $host"
+      CC="cc -std1";
+      ac_cv_prog_CC="$CC"
+   fi
+   ;;
+*-hp-hpux*)
+   if test "$ac_cv_prog_CC" = "cc" ; then
+      echo "adding '-Ae' to cc args for $host"
+      CC="cc -Ae";
+      ac_cv_prog_CC="$CC"
+   fi
+   ;;
+esac
+
+# Check for programs
+AC_PROG_INSTALL
+AC_PATH_PROG(FALSE, false, /usr/bin/false)
+AC_PATH_PROG(RM, rm, $FALSE)
+
+AC_C_CONST
+AC_C_INLINE
+AC_C_BIGENDIAN
+
+# Check for headers
+AC_HEADER_STDC
+
+AC_CHECK_HEADERS( sys/select.h   stdarg.h )
+
+# Check for typedefs
+AC_CHECK_SIZEOF(int)
+AC_CHECK_SIZEOF(long)
+AC_CHECK_SIZEOF(void *)
+
+AC_TYPE_SIGNAL
+AC_TYPE_SIZE_T
+AC_CHECK_TYPE(pid_t, int)
+AC_CHECK_TYPE(ssize_t, long)
+AC_CHECK_TYPE(u_int8_t, unsigned char)
+AC_CHECK_TYPE(u_int16_t, unsigned short)
+AC_CHECK_TYPE(u_int32_t, unsigned int)
+AC_CHECK_TYPE(int16_t, short)
+AC_CHECK_TYPE(int32_t, int)
+AC_CHECK_TYPE(int8_t, char)
+
+# Check for type in sys/socket.h
+AC_CACHE_CHECK(for socklen_t, ac_cv_type_socklen_t,
+[ AC_EGREP_CPP(
+   [ socklen_t[^a-zA-Z_0-9] ],
+   [ #include <sys/types.h>
+     #include <sys/socket.h>
+     #if STDC_HEADERS
+     #include <stdlib.h>
+     #include <stddef.h>
+     #endif
+   ],
+   ac_cv_type_socklen_t=yes,
+   ac_cv_type_socklen_t=no
+  )
+])
+if test $ac_cv_type_socklen_t = no; then
+   AC_DEFINE(socklen_t, int)
+fi
+
+AC_CHECK_FUNCS(snprintf,
+   AC_CHECK_FUNCS(vsnprintf, ,
+      TRACKER_OBJS="$TRACKER_OBJS snprintf.o";
+      ac_cv_func_snprintf=no
+   ),
+   snpftest=`echo "$SHARED_OBJS" | grep "snprintf\.o"`;
+   if test "$snpftest" = ""; then
+      TRACKER_OBJS="$TRACKER_OBJS snprintf.o";
+      ac_cv_func_snprintf=no
+   fi
+)
+if test $ac_cv_func_snprintf = yes; then
+   AC_MSG_CHECKING(for broken snprintf)
+   AC_CACHE_VAL(ac_cv_broken_snprintf,
+      AC_TRY_RUN(
+         [ #include <stdio.h>
+           int main()
+           {
+              char *buf;
+              return snprintf(buf,1,"ab%s","cdefg")!=-1 ? 1 : 0;
+           }
+         ],
+         ac_cv_broken_snprintf=no,
+         ac_cv_broken_snprintf=yes
+      )
+   )
+   AC_MSG_RESULT($ac_cv_broken_snprintf)
+   if test $ac_cv_broken_snprintf = yes; then
+      AC_DEFINE(BROKEN_SNPRINTF)
+
+      # snprintf.o may already be scheduled to be made
+      snpftest=`echo "$SHARED_OBJS" | grep "snprintf\.o"`;
+      if test "$snpftest" = ""; then
+         TRACKER_OBJS="$TRACKER_OBJS snprintf.o"
+      fi
+   fi
+fi
+
+AC_CHECK_LIB(bind, gethostbyname)
+if test $ac_cv_lib_bind_gethostbyname = "no" ; then
+   case "$host" in
+   i386-*-freebsd*)
+      echo "skipping libresolv checks for $host"
+      ;;
+   *)
+      AC_CHECK_LIB(resolv, inet_aton, AC_CHECK_LIB(44bsd, inet_aton))
+      AC_CHECK_LIB(resolv, main)
+      ;;
+   esac
+fi
+
+# Remove optimization for GCC 2.95.[12]
+# gcc -O[2] on *BSD and Linux (x86) causes pointers to magically become NULL
+if test "$GCC" = "yes" ; then
+   GCCVER=`$CC -v 2>&1 | awk '$2 ==  "version" {print $3}'`
+   case "$GCCVER" in
+   [2.95.[12]])
+      echo "Removing -O for gcc on $host with GCC $GCCVER"
+      CFLAGS="`echo $CFLAGS | sed -e 's/-O[[0-9]]*//'`"
+      ;;
+   esac
+fi
+
+# Check for library functions
+AC_REPLACE_FUNCS(localtime_r inet_aton)
+AC_CHECK_FUNCS(getrlimit getdtablesize)
+AC_CHECK_FUNC(gethostbyname, , AC_CHECK_LIB(nsl, gethostbyname))
+AC_CHECK_FUNC(socket, , AC_CHECK_LIB(socket, socket))
+AC_REPLACE_FUNCS(inet_ntoa_r)
+
+# Clean up after OSF/1 core dump bug
+rm -f core
+
+# generate the makefiles
+AC_OUTPUT($makefiles)
