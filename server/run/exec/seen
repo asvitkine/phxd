@@ -1,0 +1,79 @@
+#!/bin/sh
+
+######################### Description #########################
+#
+# file: seen
+# author: devin teske
+# date: August 1, 2002
+# version: 1.1
+#
+# dependencies: grep tr tail [getudbit]
+#
+# outputs the last date/time of a transaction in the hxd log
+# given a matching string passed as an argument.
+#
+###############################################################
+
+# script prefers bash
+[ -f /bin/bash ] && SHELL=/bin/bash
+
+# test for bash on FreeBSD/OpenBSD
+[ -f /usr/local/bin/bash ] && SHELL=/usr/local/bin/bash
+
+###############################################################
+
+# only admins should be able to use this script
+w="/usr/local/bin/getudbit";
+if [ -f $w -a "$ACCOUNT" != "" ]; then
+   kickpriv=`eval "$w accounts/$ACCOUNT/UserData disconnect_users"`;
+   if [ $kickpriv -eq 0 ]; then
+      echo -n "seen: insufficient priveleges";
+      exit 0;
+   fi
+else
+   if [ "$ACCOUNT" != "" -a "$ACCOUNT" != "admin" ]; then
+      echo -n "seen: permission denied"
+      exit 0;
+   fi
+fi
+
+# check number of parameters
+if [ $# -eq 0 ]; then
+   #print usage map
+   echo -n "usage: /seen <name>";
+   exit 0;
+fi
+
+# location of the log file
+log='log';
+
+# check to see if the log file exists
+if [ ! -e $log -o -d $log ]; then
+   echo -n "log file '$log' does not exist or is dir";
+   exit 0;
+fi
+
+# find the specified name
+logent=`grep "$@" $log`;
+
+# skip if there was no matching log entries
+if [ "$logent" != "" ]; then
+
+   # replace tabs with a karat
+   logent=`echo -n "$logent" | tr "\t" "^"`;
+
+   # remove log entry portion of matches and leave date/time
+   logent=`echo -n "$logent" | sed s/"\(.*\)^.*"/"\\1"/g`;
+   
+   # get the last entry
+   logent=`echo -n "$logent" | tail -n 1`;
+
+   # add a clever starting
+   logent="saw '$@' at: $logent";
+
+else #say something clever:
+   logent="haven't seen '$@' lately."
+fi
+
+# output the result
+echo -n "$logent";

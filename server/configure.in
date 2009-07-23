@@ -1,0 +1,623 @@
+#
+# shxd-0.2 configure script
+# Februrary 2, 2002
+# Devin Teske <devinteske@hotmail.com>
+#
+# $Id: configure.in,v 2.0 2001/09/05 3:15:18 teske Exp $
+#
+
+AC_INIT(include/main.h)
+AC_PREREQ(2.12)
+AC_REVISION($Revision: 2.0 $)
+AC_CONFIG_HEADER(include/config.h)
+AC_PREFIX_DEFAULT(/usr/local/shxd)
+AC_CONFIG_AUX_DIR(cfgaux)
+
+AC_CANONICAL_HOST
+
+# add a .exe suffix to the binary if we are on a win32 host
+case "$host_os" in
+cygwin|cygwin32|os2)
+   exec_suffix=".exe"
+   ;;
+*)
+   exec_suffix=""
+   ;;
+esac
+AC_SUBST(exec_suffix)
+
+AC_DEFINE_UNQUOTED(CONFIG_HOST_TYPE, "$host")
+
+# is the client included in this package?
+hotline_client="no"
+
+# Substitutions
+AC_SUBST(CFLAGS)
+AC_SUBST(TARGETS)
+AC_SUBST(SHARED_OBJS)
+AC_SUBST(SHAREDLIBS)
+AC_SUBST(SYS_INCLUDES)
+AC_SUBST(HXDOBJS)
+AC_SUBST(HXDLIBS)
+AC_SUBST(hxddirs)
+AC_SUBST(INCLUDE_DEPEND)
+AC_SUBST(DEPFIND)
+AC_SUBST(CDEFS)
+
+# Set default LDFLAGS
+if test -z "$LDFLAGS"; then
+   LDFLAGS="-g"
+fi
+
+PRESET_CFLAGS="$CFLAGS"
+
+# Check for GNU cc
+AC_PROG_CC
+
+if test $cross_compiling = yes; then
+   AC_CHECK_PROGS(BUILD_CC, gcc cc)
+   CC=$BUILD_CC
+fi
+
+# Check for ISC POSIX for additional arguments to compiler
+AC_ISC_POSIX
+
+# Gerben Wierda <Gerben_Wierda@RnA.nl>
+case "$host" in
+   mab-next-nextstep3)
+   CC="$CC -arch m68k -arch i486 -arch hppa -arch sparc"
+   ;;
+esac
+
+# Set Default CFLAGS
+if test -z "$PRESET_CFLAGS"; then
+   if test "$GCC" = "yes"; then
+      case "$host" in
+      *-sun-sunos*)
+         # sunos has too many warnings for this to be useful
+         # motorola too
+         ;;
+      *m88k*)
+         # Motorola cc/ld does not like -02 but is ok on -O
+         CFLAGS=`echo $CFLAGS | sed -e 's/-O[0-9]/-O/'`
+         ;;
+      *)
+         CFLAGS="$CFLAGS -Wall"
+         ;;
+      esac
+   else
+      case "$host" in
+      *mips-sgi-irix6.*)
+         # suggested by Rafael Seidl <rafaels@cthulhu.engr.sgi.com>
+         CFLAGS="$CFLAGS -n32 -mips3 -O3 -OPT:Olimit=0:space=OFF \
+         -woff 1009,1014,1048,1110,1116,1185,1188,1204,1230,1233 \
+         -Wl,-woff,85,-woff,84,-woff,134 \
+         -nostdinc -I/usr/include -D_BSD_SIGNALS"
+         ;;
+      alpha-dec-osf4.*)
+         # Mogul says DEC compilers take both -g and -O2
+         CFLAGS=`echo $CFLAGS | sed -e 's/-g/-g3/'`
+         CFLAGS="$CFLAGS -O2"
+         ;;
+      *)
+         ;;
+      esac
+   fi
+fi
+
+# Set LDFLAGS
+if test -z "$PRESET_LDFLAGS"; then
+   if test "$GCC" = "yes"; then
+      case "$host" in
+      *)
+         # nothing
+         ;;
+      esac
+   else
+      case "$host" in
+      *mips-sgi-irix6.*)
+         # suggested by Rafael Seidl <rafaels@cthulhu.engr.sgi.com>
+         LDFLAGS="-n32 -mips3 -nostdlib -L/usr/lib32"
+         ;;
+      esac
+   fi
+fi
+
+# list of default makefiles to produce:
+makefiles="\
+   ./makefile         \
+   ./src/Makefile     "
+
+# Enable optional modules
+echo "Enable Options:"
+echo ""
+
+AC_ARG_ENABLE(stdarg,
+[  --enable-stdarg            Enable the explicit use of stdarg.h],
+[ if test "$enableval" = "yes" ; then
+   AC_DEFINE(ENABLE_STDARG_H)
+  fi
+])
+
+AC_ARG_ENABLE(warnings,
+[  --enable-warnings          Show compiler warnings],
+[ if test "$enableval" = "no" ; then
+   CFLAGS=`echo $CFLAGS | sed -e 's/\ -Wall//'`
+   CFLAGS="-w $CFLAGS"
+  else
+   echo "   Compiler warnings enabled"
+  fi
+],
+[ CFLAGS=`echo $CFLAGS | sed -e 's/\ -Wall//'`
+  CFLAGS="-w $CFLAGS"
+])
+
+AC_ARG_ENABLE(hotline_server,
+[  --disable-hotline-server   Don't compile hotline server],
+[ if test "$enableval" = "no" ; then
+   hotline_server="no"
+  fi
+])
+
+AC_ARG_ENABLE(tracker_server,
+[  --enable-tracker-server    compile tracker server],
+[ if test "$enableval" = "yes" ; then
+   echo "   Tracker server enabled"
+   AC_DEFINE(CONFIG_TRACKER_SERVER)
+   TARGETS="$TARGETS \$(TRACKER_EXE)"
+   tracker_server="yes"
+  fi
+])
+
+if test "$tracker_server" = "yes" ; then
+   hotline_server="no"
+elif test ! "$hotline_server" = "no" ; then
+   echo "   Hotline server enabled"
+   hotline_server="yes"
+fi
+
+AC_ARG_ENABLE(socket-linger,
+[  --enable-socket-linger     enable the SO_LINGER socket option],
+[ if test "$enableval" = "yes" ; then
+   echo "   Linger socket option enabled"
+   CDEFS="$CDEFS -DSO_LINGER"
+  fi
+])
+
+AC_ARG_ENABLE(xmalloc-debug,
+[  --enable-xmalloc-debug     Do some simple malloc debugging],
+[ if test "$enableval" = "yes" ; then
+   echo "   Malloc debugging enabled"
+   AC_DEFINE(XMALLOC_DEBUG)
+  fi
+])
+
+AC_DEFINE(CONFIG_HOTLINE_SERVER)
+if test "$hotline_server" = "yes" ; then
+   AC_DEFINE(CONFIG_HOTLINE_SERVER)
+fi
+
+# shared by the server and client
+AC_ARG_ENABLE(htxf-pthread,
+[  --enable-htxf-pthread      use pthread instead of fork or clone for htxf],
+[ if test "$enableval" = "yes" ; then
+   use_pthreads="yes"
+  fi
+])
+
+AC_ARG_ENABLE(htxf-clone,
+[  --enable-htxf-clone        use clone instead of pthread or fork for htxf],
+[ if test "$enableval" = "yes" ; then
+   use_clone="yes"
+  fi
+])
+
+AC_CHECK_HEADERS(pthread.h)
+
+# only enable htxf when something that uses it is enabled
+if test "$hotline_server" = "yes" -o "$hotline_client" = "yes" ; then
+   if test "$use_pthreads" = "yes" ; then
+      echo "   pthreads enabled for file transfers"
+      AC_DEFINE(CONFIG_HTXF_PTHREAD)
+
+      # fark! darwin has no pthread_kill, kill should do fine
+      case "$host" in
+      *-darwin*)
+         #AC_DEFINE(pthread_kill(A,B) kill(A,B))
+      esac
+      AC_CHECK_LIB(pthread, main)
+
+      # damn! FreeBSD's pthreads breaks dup2().
+      case $host in
+      i386-unknown-freebsd*)
+         HXDLIBS="$HXDLIBS -pthread";;
+      i386-unknown-openbsd*)
+         HXDLIBS="$HXDLIBS -pthread";;
+      *)
+         HXDLIBS="$HXDLIBS -lpthread";;
+      esac
+
+      use_clone="no"
+   elif test "$use_clone" = "yes"; then
+      echo "   clone enabled for file transfers"
+      AC_DEFINE(CONFIG_HTXF_CLONE)
+      AC_DEFINE(CONFIG_HTXF_QUEUE)
+      #AC_CHECK_HEADERS(   sched.h   asm/pal.h   )
+      AC_CHECK_HEADER(sched.h)
+      AC_CHECK_HEADER(asm/pal.h)
+   else
+      echo "   fork enabled for file transfers"
+      AC_DEFINE(CONFIG_HTXF_FORK)
+   fi
+fi
+
+AC_ARG_ENABLE(htxf-preview,
+[  --enable-htxf-preview      enable image preview (needs ImageMagick)],
+[ if test "$enableval" = "yes" -a "$hotline_server" = "yes" ; then
+   echo "   image preview for server enabled"
+   AC_DEFINE(CONFIG_HTXF_PREVIEW)
+   SYS_INCLUDES="$SYS_INCLUDES -I/usr/X11R6/include -I/usr/X11R6/include/X11"
+   HXDLIBS="$HXDLIBS `Magick-config --libs`"
+  fi
+])
+
+# only enable hfs when something that uses it is enabled
+if test "$hotline_server" = "yes" -o "$hotline_client" = "yes" ; then
+   HXDLIBS="$HXDLIBS hfs/hfs.o"
+   hxddirs="$hxddirs hfs"
+   makefiles="$makefiles ./src/hfs/Makefile"
+fi
+
+# shared by the server and client
+AC_ARG_ENABLE(hope,
+[  --enable-hope              enable HOPE],
+[ if test "$enableval" = "yes" ; then
+   use_hope="yes"
+  fi
+])
+
+# only enable hope when something that uses it is enabled
+if test "$hotline_server" = "yes" -o "$hotline_client" = "yes" ; then
+   if test "$use_hope" = "yes" ; then
+      echo "   HOPE enabled"
+      AC_DEFINE(CONFIG_HOPE)
+      AC_CHECK_HEADERS(endian.h)
+      HXDLIBS="$HXDLIBS hope/hmac.o hope/md5.o hope/sha.o"
+      HXDLIBS="$HXDLIBS hope/haval.o hope/rand.o"
+      hxddirs="$hxddirs hope"
+      makefiles="$makefiles ./src/hope/Makefile"
+   fi
+fi
+
+# shared by the server and client
+AC_ARG_ENABLE(cipher,
+[  --enable-cipher            enable cipher],
+[ if test "$enableval" = "yes" ; then
+   use_cipher="yes"
+  fi
+])
+
+# only enable cipher when something that uses it is enabled
+if test "$hotline_server" = "yes" -o "$hotline_client" = "yes" ; then
+   if test "$use_cipher" = "yes"; then
+      echo "   cipher enabled"
+      if test "$use_hope" != "yes" ; then
+         AC_MSG_ERROR("hope must be enabled to enable cipher")
+      fi
+      AC_DEFINE(CONFIG_CIPHER)
+      HXDLIBS="$HXDLIBS cipher/cipher.o"
+      hxddirs="$hxddirs cipher"
+      makefiles="$makefiles ./src/cipher/Makefile"
+   fi
+fi
+
+# more hope stuff
+if test "$hotline_server" = "yes" -o "$hotline_client" = "yes" ; then
+   if test "$use_hope" = "yes" -o "$use_cipher" = "yes" ; then
+      AC_CHECK_HEADERS(openssl/rand.h)
+      SYS_INCLUDES="$SYS_INCLUDES -I/usr/local/ssl/include"
+      LDFLAGS="$LDFLAGS -L/usr/local/ssl/lib"
+      HXDLIBS="$HXDLIBS -lcrypto"
+   fi
+fi
+
+# shared by the server and client
+AC_ARG_ENABLE(cipher-idea,
+[  --enable-cipher-idea       enable idea cipher],
+[ if test "$enableval" = "yes" ; then
+   AC_DEFINE(CONFIG_CIPHER_IDEA)
+  fi
+])
+
+
+# shared by the server and client
+AC_ARG_ENABLE(compress,
+[  --enable-compress          enable compress],
+[ if test "$enableval" = "yes" ; then
+   use_compress="yes"
+  fi
+])
+
+# only enable compress when something that uses it is enabled
+if test "$hotline_server" = "yes" -o "$hotline_client" = "yes" ; then
+   if test "$use_compress" = "yes" ; then
+      echo "   header compression enabled"
+      AC_DEFINE(CONFIG_COMPRESS)
+      HXDLIBS="$HXDLIBS compress/compress.o"
+      hxddirs="$hxddirs compress"
+      makefiles="$makefiles ./src/compress/Makefile"
+      AC_CHECK_LIB(z, deflate, HXDLIBS="$HXDLIBS -lz")
+   fi
+fi
+
+# back to server options
+AC_ARG_ENABLE(network,
+[  --enable-network           enable network],
+[ if test "$enableval" = "yes" -a "$hotline_server" = "yes" ; then
+   echo "   network support for hotline server enabled"
+   AC_DEFINE(CONFIG_NETWORK)
+  fi
+])
+
+AC_ARG_ENABLE(sql,
+[  --enable-sql               use mysql logging],
+[ if test "$enableval" = "yes" -a "$hotline_server" = "yes" ; then
+   echo "   mysql logging for hotline server enabled"
+   AC_DEFINE(CONFIG_SQL)
+   AC_CHECK_HEADERS(mysql.h)
+   SYS_INCLUDES="$SYS_INCLUDES -I/usr/include/mysql"
+   SYS_INCLUDES="$SYS_INCLUDES -I/usr/local/include/mysql"
+   SYS_INCLUDES="$SYS_INCLUDES -I/usr/local/mysql/include"
+   LDFLAGS="$LDFLAGS -L/usr/local/lib/mysql"
+   LDFLAGS="$LDFLAGS -L/usr/lib/mysql"
+   LDFLAGS="$LDFLAGS -L/usr/local/mysql/lib"
+   HXDLIBS="$HXDLIBS -lmysqlclient"
+   # known issue that sometimes zlib is required to compile in mysql support
+   # check if it is installed and add it if so (just for no hassle support)
+   AC_CHECK_LIB(z, deflate, HXDLIBS="$HXDLIBS -lz")
+   HXDLIBS="$HXDLIBS sql/sql.o"
+   hxddirs="$hxddirs sql"
+   makefiles="$makefiles ./src/sql/Makefile"
+  fi
+])
+
+AC_ARG_ENABLE(ipv6,
+[  --enable-ipv6              IPv6 support. IPv4 will not work],
+[ if test "$enableval" = "yes" ; then
+   echo "   IPv6 enabled"
+   AC_DEFINE(CONFIG_IPV6)
+  fi
+])
+
+AC_ARG_WITH(socks,
+[  --with-socks[=dir]         use socks library in dir], ,
+[ with_socks="no" ])
+
+AC_ARG_WITH(socks_include,
+[  --with-socks-include=dir   use socks header in dir], ,
+[ with_socks_include="no" ])
+
+if test ! "$with_socks" = "no"; then
+   echo "   SOCKSv5 support enabled"
+   if test ! "$with_socks" = "yes"; then
+      HXDLIBS="$HXDLIBS -L$with_socks"
+   fi
+   CFLAGS="$CFLAGS -DSOCKS -DINCLUDE_PROTOTYPES"
+   if test ! "$with_socks_include" = "no"; then
+      SYS_INCLUDES="$SYS_INCLUDES -I$with_socks_include"
+   fi
+   AC_CHECK_LIB(socks5, SOCKSinit)
+fi
+
+echo ""
+
+
+# Force some compilers to use ANSI features
+case "$host" in
+alpha-dec-osf*)
+   if test "$ac_cv_prog_CC" = "cc" ; then
+      echo "adding '-std1' to cc args for $host"
+      CC="cc -std1";
+      ac_cv_prog_CC="$CC"
+   fi
+   ;;
+*-hp-hpux*)
+   if test "$ac_cv_prog_CC" = "cc" ; then
+      echo "adding '-Ae' to cc args for $host"
+      CC="cc -Ae";
+      ac_cv_prog_CC="$CC"
+   fi
+   ;;
+esac
+
+# Check for programs
+AC_PROG_INSTALL
+AC_PATH_PROG(SH, sh, /bin/sh)
+AC_PATH_PROG(TR, tr, "/bin/tr")
+AC_PATH_PROG(FALSE, false, /usr/bin/false)
+AC_PATH_PROG(TRUE, true, /usr/bin/true)
+AC_PATH_PROG(RM, rm, $FALSE)
+AC_PATH_PROG(MV, mv, $FALSE)
+AC_PATH_PROG(MKDIR, mkdir, $FALSE)
+AC_PATH_PROG(LN, ln, cp)
+AC_PATH_PROG(MAKEDEPEND, makedepend, $TRUE)
+
+AC_DEFINE_UNQUOTED(PATH_TR, "$TR")
+
+AC_C_CONST
+AC_C_INLINE
+AC_C_BIGENDIAN
+
+# Check for headers
+AC_HEADER_DIRENT
+AC_HEADER_STDC
+
+
+AC_CHECK_HEADERS( \
+   arpa/inet.h    signal.h      sys/select.h   \
+   ctype.h        stdarg.h      sys/socket.h   \
+   dirent.h       stdio.h       sys/stat.h     \
+   errno.h        stdlib.h      sys/time.h     \
+   fcntl.h        string.h      sys/types.h    \
+   fnmatch.h      strings.h     sys/wait.h     \
+   netdb.h        sys/ioctl.h   time.h         \
+   netinet/in.h   sys/param.h   unistd.h       \
+   varargs.h                                   \
+)
+
+# always add apple files as they are coded to compile unconditionally
+# and provide transparent functionality
+HXDLIBS="$HXDLIBS apple/alias.o apple/files.o apple/mac_errno.o"
+HXDLIBS="$HXDLIBS apple/mac_string.o apple/unicode.o"
+hxddirs="$hxddirs apple"
+makefiles="$makefiles ./src/apple/Makefile"
+
+# test for Carbon API
+AC_MSG_CHECKING(for CoreServices (Mac OS X))
+AC_CACHE_VAL(ac_cv_coreservices,
+   AC_TRY_COMPILE([ #include <CoreServices/CoreServices.h> ],
+      [ FSRef foo; ],
+      ac_cv_coreservices="yes",
+      ac_cv_coreservices="no"
+   )
+)
+
+AC_MSG_RESULT($ac_cv_coreservices)
+
+# enable CoreServices files
+if test "$ac_cv_coreservices" = "yes"; then
+   AC_DEFINE(HAVE_CORESERVICES)
+   LDFLAGS="$LDFLAGS -framework coreservices"
+fi
+
+# set flags for darwin based operating systems
+case "$host" in
+   *-darwin*)
+      AC_DEFINE(HOST_DARWIN)
+   ;;
+esac
+
+# Check for typedefs
+AC_CHECK_SIZEOF(int)
+AC_CHECK_SIZEOF(long)
+AC_CHECK_SIZEOF(void *)
+
+AC_TYPE_SIGNAL
+AC_TYPE_SIZE_T
+AC_CHECK_TYPE(pid_t, int)
+AC_CHECK_TYPE(ssize_t, long)
+AC_CHECK_TYPE(u_int8_t, unsigned char)
+AC_CHECK_TYPE(u_int16_t, unsigned short)
+AC_CHECK_TYPE(u_int32_t, unsigned int)
+AC_CHECK_TYPE(int16_t, short)
+AC_CHECK_TYPE(int32_t, int)
+AC_CHECK_TYPE(int8_t, char)
+
+# Check for type in sys/socket.h
+AC_CACHE_CHECK(for socklen_t, ac_cv_type_socklen_t,
+[ AC_TRY_COMPILE(
+   [ #include <sys/types.h>
+     #include <sys/socket.h>
+     #if STDC_HEADERS
+     #include <stdlib.h>
+     #include <stddef.h>
+     #endif
+   ],
+   [ socklen_t foo = (socklen_t) 0; ],
+   ac_cv_type_socklen_t=yes,
+   ac_cv_type_socklen_t=no
+  )
+])
+if test $ac_cv_type_socklen_t = no; then
+   AC_DEFINE(socklen_t, int)
+fi
+
+AC_CHECK_FUNCS(snprintf,
+   AC_CHECK_FUNCS(vsnprintf, ,
+      SHARED_OBJS="$SHARED_OBJS snprintf.o";
+      ac_cv_func_snprintf=no
+   ),
+   snpftest=`echo "$SHARED_OBJS" | grep "snprintf\.o"`;
+   if test "$snpftest" = ""; then
+      SHARED_OBJS="$SHARED_OBJS snprintf.o";
+      ac_cv_func_snprintf=no
+   fi
+)
+if test $ac_cv_func_snprintf = yes; then
+   AC_MSG_CHECKING(for broken snprintf)
+   AC_CACHE_VAL(ac_cv_broken_snprintf,
+      AC_TRY_RUN(
+         [ #include <stdio.h>
+           int main()
+           {
+              char *buf;
+              return snprintf(buf,1,"ab%s","cdefg")!=-1 ? 1 : 0;
+           }
+         ],
+         ac_cv_broken_snprintf=no,
+         ac_cv_broken_snprintf=yes
+      )
+   )
+   AC_MSG_RESULT($ac_cv_broken_snprintf)
+   if test $ac_cv_broken_snprintf = yes; then
+      AC_DEFINE(BROKEN_SNPRINTF)
+
+      # snprintf.o may already be scheduled to be made
+      snpftest=`echo "$SHARED_OBJS" | grep "snprintf\.o"`;
+      if test "$snpftest" = ""; then
+         SHARED_OBJS="$SHARED_OBJS snprintf.o"
+      fi
+   fi
+fi
+
+AC_CHECK_LIB(bind, gethostbyname)
+if test $ac_cv_lib_bind_gethostbyname = "no" ; then
+   case "$host" in
+   i386-*-freebsd*)
+      echo "skipping libresolv checks for $host"
+      ;;
+   *)
+      AC_CHECK_LIB(resolv, inet_aton, AC_CHECK_LIB(44bsd, inet_aton))
+      AC_CHECK_LIB(resolv, main)
+      ;;
+   esac
+fi
+AC_CHECK_LIB(m, main)
+
+# Remove optimization for GCC 2.95.[12]
+# gcc -O[2] on *BSD and Linux (x86) causes pointers to magically become NULL
+if test "$GCC" = "yes" ; then
+   GCCVER=`$CC -v 2>&1 | awk '$2 ==  "version" {print $3}'`
+   case "$GCCVER" in
+   [2.95.[12]])
+      echo "Removing -O for gcc on $host with GCC $GCCVER"
+      CFLAGS="`echo $CFLAGS | sed -e 's/-O[[0-9]]*//'`"
+      ;;
+   esac
+fi
+
+# Check for library functions
+AC_REPLACE_FUNCS(localtime_r inet_aton)
+AC_CHECK_FUNCS(getrlimit getdtablesize)
+AC_CHECK_FUNC(gethostbyname, , AC_CHECK_LIB(nsl, gethostbyname))
+AC_CHECK_FUNC(socket, , AC_CHECK_LIB(socket, socket))
+
+if test "$hotline_server" = "yes"; then
+   AC_CHECK_FUNC(realpath, \
+      AC_DEFINE(HAVE_REALPATH), \
+      HXDOBJS="$HXDOBJS realpath.o")
+   AC_CHECK_FUNC(strcasestr, \
+      AC_DEFINE(HAVE_STRCASESTR), \
+      HXDOBJS="$HXDOBJS strcasestr.o")
+   AC_CHECK_FUNC(strptime, \
+      AC_DEFINE(HAVE_STRPTIME), \
+      HXDOBJS="$HXDOBJS strptime.o")
+   TARGETS="$TARGETS \$(HXD_EXE)"
+   AC_REPLACE_FUNCS(inet_ntoa_r)
+fi
+
+# Clean up after OSF/1 core dump bug
+rm -f core
+
+# generate the makefiles
+AC_OUTPUT($makefiles)

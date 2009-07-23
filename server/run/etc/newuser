@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# the current working directory is always where hxd lies
+cp -r ./etc/skel/* $ACCOUNTDIR/$ACCOUNT 

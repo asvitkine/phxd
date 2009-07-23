@@ -1,0 +1,68 @@
+What's new in the 0.1.51 and higher setup?
+
+   I'm currently working on hxd 0.2. What you are seeing in hxd 0.1.51
+   is a little bit of my work on 0.2 that I have ported over to the
+   older versions.
+
+   What I've changed is, I have completely rewritten the configure.in,
+   Makefile.in, and other files from scratch. These files, among others,
+   are responsible for linking all of the hxd code to your systems
+   libraries and header files. If they are not written correctly then
+   you will never make it past the linking process and you will not
+   get a binary.
+
+   This process is very important. The old scripts were obviously not
+   written as well as they could have been. I wrote new ones so that
+   I could bring more support to more operating systems and also
+   fix existing issues. The new architecture also organizes the code a
+   little. It moves all the source files into a central directory and
+   all the header files into a central directory as well.
+
+   This is all in preparation for much more advanced features in 0.2,
+   such as dynamic-linking and a more organized source tree. Once the
+   new architecture is finished (the build and configure processes
+   really have no relation to the actual code), I can commence the
+   complete rewriting of several modules.
+
+How do I set up remote server queueing?
+
+   Remote server queueing as of version 0.1.46 only works with
+   '--enable-htxf-clone'. Yes, that does mean that OS X users cannot use
+   remote queueing yet, but this was just the first step, to get the
+   patch in there and working. Nobody has ever made remote queueing work
+   with pthreads yet because pthreads were broken in previous versions.
+   Now that pthreads work again, I am going to try to expand the source
+   to work with pthreads. Not much demand for fork users but i will
+   *try* to expand it to fork (can't promise anything). A version that
+   queues without threading might come much later on. Happy queueing!
+
+   Enabling remote queueing:
+
+      % ./configure --enable-htxf-clone
+      % make
+
+   That's it. Remote Queueing is enabled automatically when you enable cloning.
+
+   For a list of other --enable extensions to hxd:
+
+      % ./configure --help
+
+   Configuring remote queueing:
+
+   In hxd.conf you can specify certain options. Remote queueing will
+   start to queue downloads once the option "total_downloads" has been
+   reached. The person downloading can only have a total of
+   "individual_downloads" registered with the server (counting active
+   downloads and queued downloads). If the user tries to reaches this
+   amount, then any further registered downloads will be cancelled. The
+   entire total of all downloads in queue cannot exeed "queue_size".
+   That's about it.
+
+How do i set up files for different accounts?
+
+   You can give each account a different set of files by making a folder
+   named "files" (all lowercase, without the quotes) inside the account
+   folder.
+
+   For example: to give guests their own files
+      mkdir ./accounts/guest/files

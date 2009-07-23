@@ -1,0 +1,196 @@
+#!/bin/sh
+
+#################################################################
+# Title: mail
+# Date: November 21, 2002
+# Author: Devin Teske
+# version: 3.1
+#
+# Special Parameters:
+#    -r, --read    read your mail
+#    -c, --clear   empty your mailbox
+#    -h, --help    view usage statement
+#
+# Dependencies:
+#    grep   tr   sed
+#
+# Description:
+#    This script requires shxd-0.1.58 at least because it uses
+#    the exec environment variable $ACCOUNT.
+#
+#    This script conforms to BSD standards. This script gives
+#    you server-side mail messaging. Allowing you to leave
+#    messages for people that are not logged in. When they log
+#    in, they can simply run the script and check their mail.
+#
+#    Options in the configuration section allow you to specify
+#    a list of accounts that should not have mailboxes.
+#
+#    To get a list of options that this script supports, pass
+#    "--help" as the first and only parameter.
+#
+#    If you made changes to your hxd.conf file regarding the
+#    location of your accounts directory, you will need to set
+#    the location accordingly in the configuration section.
+#    Note that the default setting is "./accounts" due to when
+#    an exec is called, the current working directory is the
+#    directory that shxd resides in.
+#
+#################################################################
+
+# script prefers bash
+[ -f /bin/bash ] && SHELL=/bin/bash
+
+####################### Configuration Section
+
+# list of accounts that do not have mail boxes
+nomail="guest Guest";
+
+# accounts directory
+accounts="./accounts";
+
+####################### Begin Script
+
+# initialize test variables
+read=0; clear=0; read_size=0;
+
+# check the number of parameters
+case $# in
+0)
+   # there are no paremeters, so count the messages the person has
+   read_size=1;;
+1)
+   # There is only one parameter. check if it is one of the two
+   # parameters that we accept by themself. otherwise the first
+   # parameter should be taken as an account name and the message
+   # was omitted. In this case, we output the usage statement.
+
+   case $1 in
+   -r|--read) read=1;;
+   -c|--clear) clear=1;;
+   *) printf "\r\
+Usage: mail                   how many messages you have\r\
+       mail -c | --clear      clears your mailbox\r\
+       mail -r | --read       outputs your mail\r\
+       mail account message   sends mail to the specified account\r\
+note: mail is restricted to 28 words (hxd limitation)";
+      exit 1;;
+   esac
+   ;;
+*)
+   # obtain the account that the person is attempting to mail
+   # then shift the parameters one so that $@ holds the message
+   acct="$1"; shift 1;
+   args=`echo "$@" \
+      | sed -e s/";"/"\\\\;"/g \
+      | sed -e s/"\""/"\\\\\""/g \
+      | sed -e s/"%"/"%%"/g \
+      | sed -e s/"*"/"\\\\*"/g`;
+   ;;
+esac
+
+# check if the person executing the script has a mailbox to read or clear
+# if they do not, we issue an error statement and exit accordingly
+nm=`echo "$nomail" | grep -- "$ACCOUNT"`;
+if [ "$nm" != "" ]; then
+   if [ $read -eq 1 -o $clear -eq 1 -o $read_size -eq 1 ]; then
+      printf "\rmail: you do not have a mailbox";
+      exit 1;
+   fi
+fi
+
+# set the separator for each post
+separator="_________________________________________________";
+
+# check if the person executing this script is wanting to
+# scope out how many messages are in their box
+if [ $read_size -eq 1 ]; then
+
+   # count how many messages they have
+   if [ -f $accounts/$ACCOUNT/mail ]; then
+      n=`cat $accounts/$ACCOUNT/mail | grep -cx -- "$separator"`;
+      mail=`cat $accounts/$ACCOUNT/mail`;
+      [ "$mail" != "" ] && (( n = n + 1 ));
+   else
+      n=0;
+   fi
+
+   # set proper grammar
+   [ $n -ne 1 ] && messages="messages" || messages="message";
+
+   # short message attached on how to read their mailbox
+   [ $n -gt 0 ] && how=" (/mail --help)" || how="";
+
+   # output the message
+   printf "\rYou have $n $messages in your mailbox$how";
+   exit 0;
+
+elif [ $read -eq 1 ]; then
+
+   # read the persons mailbox and output the messages to chat
+
+   # check if the mail file exists (otherwise cat will error)
+   if [ -f $accounts/$ACCOUNT/mail ]; then
+      mail=`cat $accounts/$ACCOUNT/mail | tr '\n' '\r'`;
+
+      # the mail file might be empty from `mail -c'
+      [ "$mail" = "" ] && mail="Your mailbox is empty";
+
+      printf "\r$mail";
+   else
+      printf "\rYour mailbox is empty";
+   fi
+   exit 0;
+
+elif [ $clear -eq 1 ]; then
+
+   # empty the person's mail file
+   cat /dev/null > $accounts/$ACCOUNT/mail;
+   echo 0 > $accounts/$ACCOUNT/mailcall;
+   printf "\rYour mailbox has been emptied";
+   exit 0;
+fi
+
+# check if the account that they are trying to send mail to exists
+if [ ! -d "$accounts/$acct" ]; then
+   printf "\rmail: account '$acct' does not exist";
+   exit 1;
+fi
+
+# check if the person is attempting to send mail to an account that
+# does not have a mailbox.
+nm=`echo "$nomail" | grep -- "$acct"`;
+if [ "$nm" != "" ]; then
+   printf "\rmail: $acct does not have a mailbox";
+   exit 1;
+fi
+
+# get the current contents of the mail file
+if [ -f "$accounts/$acct/mail" ]; then
+   mail=`cat "$accounts/$acct/mail"`;
+else
+   mail="";
+fi
+
+# check if there are posts already (if so we use the separator)
+[ "$mail" != "" ] && post="\n$separator\n" || post="";
+
+# assemble the message and header
+header="From $ACCOUNT (`date`):\n";
+post="$post$header\n";
+
+# append the new post to the end of the mail file
+printf "$post" >> "$accounts/$acct/mail";
+printf "$args" >> "$accounts/$acct/mail";
+
+# give a nice message stating that the operation was successful
+printf "\rYour message has successfully been sent to '$acct'";
+[ $# -ge 28 ] && \
+printf "\rmail: your message may have been truncated. limit is 28 words.";
+
+# output the message that they sent
+printf "\r[$acct]-> $args";
+
+
+
+#end#

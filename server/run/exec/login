@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# script prefers bash
+[ -f /bin/bash ] && SHELL=/bin/bash
+
+# test for bash on FreeBSD/OpenBSD
+[ -f /usr/local/bin/bash ] && SHELL=/usr/local/bin/bash
+
+# delete this and the following line to enable this script
+exit 0;
+
+# output the local server time
+echo -n "localtime: `date | tr -d '/n'`";

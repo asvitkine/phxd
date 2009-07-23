@@ -1,0 +1,11 @@
+# conf, for details on this file read `doc/Conf' in the shxd folder
+
+limits {
+
+   individual_downloads 2;
+   individual_uploads 2;
+   individual_exec 9;
+
+   out_Bps 0;
+
+};

@@ -1,0 +1,21 @@
+# access, for details on this file, read `doc/access' in the shxd folder
+
+#user list
+ user_visibility = 1    #/visible
+ user_color = 1         #/color
+ manage_users = 1       #/users
+
+#0wnership
+ user_0wn = 1           #/0wn
+ is_0wn3d = 0           #no one can use /0wn on you
+
+#chat
+ can_spam = 1           #you can spam public chat
+ set_subject = 1        #you can set the subject of private chats
+
+#user priveleges
+ user_access = 1        #/access
+ access_volatile = 0    #no one can change your access priveleges
+
+#account defaults
+ color = 2              #default color at login

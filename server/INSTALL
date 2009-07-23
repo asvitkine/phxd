@@ -1,0 +1,111 @@
+Requirements:
+=============
+
+   ANSI C Compiler (like gcc)
+
+
+Quick and Dirty:
+================
+
+   To compile it (the enable part is not required but is recommended):
+
+      $ ./configure --enable-htxf-pthread
+      $ make
+      $ make install
+
+   To run it (you won't be able to use your shell after this):
+
+      $ ./hxd
+
+   To run it in the background (this will return your shell to you):
+
+      $ ./hxd &
+
+
+Details:
+========
+
+   To get info on available options for configure:
+
+      $ ./configure --help
+
+   The syntax for the daemon:
+
+      hxd [-d] [-p port] [-f hxd.conf] [-o pidfile]
+
+      Options:
+         -p     the port hxd should listen on
+                     (defaults to 5500)
+
+         -f     the config file hxd should use
+                     (defaults to `./hxd.conf')
+
+         -d     detach from associated terminal (run in background)
+                     (this is the same as saying `./hxd &')
+
+         -o     output pid to specified file
+                     (no pid is output by default)
+
+
+Info:
+=====
+
+   After you run make, hxd will be in the `run' directory. You can
+   simply copy this directory anywhere you want. It contains all
+   the files necessary to run hxd (or run `make install' to install
+   it into /usr/local/hxd'.
+
+   If things don't go smoothly along, take a gander at 'doc/Problems'.
+
+   To register with a tracker edit the tracker section of hxd.conf
+
+   To compile the tracker server:
+
+      $ ./configure --enable-tracker-server
+      $ make
+
+
+Make Directives:
+================
+
+   Compile the requested items from ./configure :
+   
+      $ make
+
+   Install hxd:
+
+      $ make install
+
+   Compile the account editor (acctedit):
+   when running acctedit: return toggles access, s saves, q quits.
+
+      $ make acctedit
+
+   Compile tracker list utility:
+
+      $ make tlist
+
+   Delete all the compile object files (*.o files) and core dump files:
+
+      $ make clean
+
+   Return the folder back to it's initial state:
+
+      $ make distclean
+
+   Create a tarball of the source
+
+      $ make tgz
+
+   Similar to above
+
+      $ make targz
+
+
+Contact:
+========
+
+   Author: Devin Teske  <devinteske@hotmail.com>
+
+   There is a mailing list thanks to Age Manocchia, to subscribe,
+   see http://www.hockey.cornell.edu:8100/Lists/hxd-l/List.html

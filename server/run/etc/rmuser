@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# make double-sure that $ACCOUNT is not empty, cause
+# if it is, you'll delete the entire account folder
+
+if [ "$ACCOUNT" != "" ]; then
+   rm -Rf $ACCOUNTDIR/$ACCOUNT
+fi

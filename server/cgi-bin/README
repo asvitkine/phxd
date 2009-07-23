@@ -1,0 +1,4 @@
+This folder is for scripts written to integrate hxd data
+into web pages. These scripts require a cgi compatible
+http server such as Apache. For best results, call these
+scripts from SSI.

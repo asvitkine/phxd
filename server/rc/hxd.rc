@@ -1,0 +1,71 @@
+#!/bin/sh
+
+# hxd boot script
+
+# location of hxd (customize this)
+hxddir="/usr/local/shxd";
+hxdexe="./hxd";
+
+# hxd rc identification number
+# must be unique to this hxd boot script
+# if you duplicate this script to manage
+# another hxd, change this id number. I
+# suggest making the id the port number
+# of the hxd that the script is managing.
+
+id=5500;
+
+# check for parameters
+case $# in
+0) echo "Usage: $0 start|stop|reload|restart"; exit 0;;
+esac
+
+cd $hxddir;
+pidfile="/var/run/hxd.$id.pid";
+
+function start_hxd () {
+   if [ -e $pidfile ]; then
+      sr=`ps ax | grep hxd | grep $id`
+      if [ "$sr" = "" ]; then
+         rm -f $pidfile;
+      else
+         echo "Daemon already running";
+         exit 0;
+      fi
+   fi 
+   echo -n "Starting shxd ($id): ";
+   cd $hxddir;
+   `$hxdexe -o $pidfile&`;
+   echo "hxd.";
+}
+
+function stop_hxd () {
+   if [ ! -e $pidfile ]; then
+      echo "Daemon is not running";
+      exit 0;
+   fi
+   echo -n "Stopping shxd ($id): ";
+   kill -9 `cat $pidfile`;
+   sleep 3;
+   rm -f $pidfile;
+   echo "done.";
+}
+
+# check parameters
+case $1 in
+start)
+   start_hxd;;
+stop)
+   stop_hxd;;
+reload)
+   if [ ! -e $pidfile ]; then
+      echo "Daemon is not running";
+      exit 0;
+   fi
+   echo -n "Reloading shxd ($id): ";
+   kill -HUP `cat $pidfile`;
+   echo "hxd.";;
+restart)
+   stop_hxd;
+   start_hxd;;
+esac

@@ -1,0 +1,46 @@
+This folder contains some useful programs i've written.
+
+mkbin
+=====
+Compiles a list of binaries that can be re-distributed. It
+automatically generates as many binaries as possible based
+on which options will compile on your system. It doesn't
+compile *every* possible binary, just the most common ones
+that people use.
+
+bashmkbin
+=========
+Uses a mathematical formula to compile a list of binaries
+that can be re-distributed. It automatically generates as
+many binaries as possible using algorithms to pair enable
+options with each other to make each unique combination.
+Unlike the above mkbin script it compiles *every* possible
+binary. The drawback is that it requires bash to run.
+
+isalias
+=======
+Uses the Mac OS X API (CoreServices) to test a file if it
+is an alias. If it is, it resolves the alias and displays
+the path. To make this program, while in the utils folder
+of shxd, do the following:
+
+   $ make isalias
+
+getudbit
+========
+A utility to get the privelege bits of a UserData file
+from the command line without user interaction. Simply
+pass it the path to the UserData file and the bit that you
+want in either numeral form or name. It returns 0 if the
+bit is not set and 1 if the bit is set. To compile it:
+
+   $ make getudbit
+
+setudbit
+========
+A utility to set the privelege bits of a UserData file
+from the command line without user interaction. Simply
+pass it the path to the UserData file and the bit that you
+want in either numeral form or name.
+
+   $ make setudbit

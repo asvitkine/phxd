@@ -1,0 +1,5 @@
+The files in this directory should be in the same folder as the hxd binary at
+runtime.
+
+If you run `make install' these files should automatically be copied to the
+same folder designated as the install path (default is `/usr/local/hxd')

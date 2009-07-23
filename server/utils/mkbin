@@ -1,0 +1,292 @@
+#!/bin/sh
+
+bin="hxd_binaries";
+cachefile="mkbin.cache";
+
+if [ $# -ge 1 ]; then
+   case "$1" in
+   clean)
+      rm -Rf $bin;
+      make clean > /dev/null 2>&1;;
+   distclean)
+      rm -Rf $bin;
+      rm -f $cachefile;
+      make distclean > /dev/null 2>&1;;
+   uncache)
+      rm -f $cachefile;;
+   *)
+      exr="$0";
+      while [ "`echo $exr | grep ./`" != "" ]; do
+         exr=`echo "$exr" | sed -e s/.\\\\//\\\\//g`;
+      done
+      exr=`echo $exr | sed -e s/\\\\///`;
+      echo "Usage: $exr [clean|distclean|uncache]";;
+   esac
+   exit 0;
+fi
+
+if [ ! -e $bin ]; then
+   mkdir $bin;
+fi
+
+# statistic vars
+compiled=0;
+failed=0;
+
+# define constants
+pt="--enable-htxf-pthread";
+cl="--enable-htxf-clone";
+fo="--enable-htxf-fork";
+pr="--enable-htxf-preview";
+ci="--enable-hope --enable-cipher";
+co="--enable-compress";
+ne="--enable-network";
+sq="--enable-sql";
+ip="--enable-ipv6";
+
+pt_s=`echo "$pt" | tr -d "-"`;
+pr_s=`echo "$pr" | tr -d "-"`;
+cl_s=`echo "$cl" | tr -d "-"`;
+fo_s=`echo "$fo" | tr -d "-"`;
+ci_s=`echo "$ci" | tr -d "-"`;
+co_s=`echo "$co" | tr -d "-"`;
+ne_s=`echo "$ne" | tr -d "-"`;
+sq_s=`echo "$sq" | tr -d "-"`;
+ip_s=`echo "$ip" | tr -d "-"`;
+
+function rmobjfiles () {
+
+      ss=`echo "$1" | tr -d "-"`;
+      
+      rm -f src/rcv.o
+      rm -f src/hxd_main.o;
+      
+      if [ "`echo "$ss" | grep -v "$pt_s"`" = "" ]; then
+         rm -f src/files.o;
+         rm -f src/hlserver.o;
+         rm -f src/htxf.o;
+      fi
+      if [ "`echo "$ss" | grep -v "$cl_s"`" = "" ]; then
+	 rm -f src/files.o;
+         rm -f src/hlserver.o;
+         rm -f src/htxf.o;
+      fi
+      if [ "`echo "$ss" | grep -v "$fo_s"`" = "" ]; then
+         rm -f src/files.o;
+         rm -f src/hlserver.o;
+         rm -f src/htxf.o;
+      fi
+      if [ "`echo "$ss" | grep -v "$pr_s"`" = "" ]; then
+         rm -f src/files.o;
+      fi
+      if [ "`echo "$ss" | grep -v "$ci_s"`" = "" ]; then
+         rm -f src/files.o;
+         rm -f src/chat.o;
+         rm -f src/compress/compress.o;
+         rm -f src/decode.o;
+         rm -f src/hxd_hlwrite.o;
+         rm -f src/htxf.o;
+      fi
+      if [ "`echo "$ss" | grep -v "$co_s"`" = "" ]; then
+         rm -f src/chat.o;
+         rm -f src/cipher.o;
+         rm -f src/decode.o;
+         rm -f src/files.o;
+         rm -f src/hlserver.o;
+         rm -f src/hxd_hlwrite.o;
+      fi
+      if [ "`echo "$ss" | grep -v "$ne_s"`" = "" ]; then
+         rm -f src/files.o;
+         rm -f src/hlserver.o;
+         rm -f src/hxd_hlwrite.o;
+      fi
+      if [ "`echo "$ss" | grep -v "$sq_s"`" = "" ]; then
+         rm -f src/files.o
+	 rm -f src/chat.o
+	 rm -f src/decode.o
+	 rm -f src/hxd_hlwrite.o
+	 rm -f src/commands.o;
+         rm -f src/hlserver.o;
+         rm -f src/htxf.o;
+         rm -f src/sql/sql.o;
+      fi
+      if [ "`echo "$ss" | grep -v "$ip_s"`" = "" ]; then
+         rm -f src/files.o;
+         rm -f src/hlserver.o;
+         rm -f src/htxf.o;
+         rm -f src/hxd_config.o;
+         rm -f src/ident.o;
+         rm -f src/hxd_tracker.o;
+      fi
+
+}
+
+prevmake="";
+tarcount=0;
+
+function maketarball () {
+   (( tarcount = tarcount + 1 ));
+   if [ ! -e $bin/shxd3.$2.tgz ]; then
+      echo -n "$tarcount: Making $1: ";
+ 
+      rm -f run/hxd;
+      ./configure $1 > /dev/null 2>&1;
+      
+      rmobjfiles "$prevmake";
+      prevmake="$1";
+      rmobjfiles "$1";
+      
+      make > /dev/null 2>&1;
+      if [ ! -e run/hxd ]; then
+         echo "no";
+         (( failed = failed + 1 ));
+      else
+         cp -R run hxd;
+         echo -ne "This binary was compiled with the following enabled options:\n\n$1" > hxd/ABOUT
+         cp -R doc hxd/doc
+	 rm -f hxd/README
+	 cp doc/INSTALL hxd/INSTALL
+	 rm -f hxd/doc/MakingBinaries
+         tar czf $bin/shxd3.$2.tgz hxd
+         rm -Rf hxd;
+         echo "yes";
+         (( compiled = compiled + 1 ));
+      fi
+   fi
+}
+
+function striparg () {
+  ss=`echo "$1" | tr -d "-" | tr -d " "`;
+  eval "$2=$ss";
+}
+
+function testcache () {
+  striparg "$1" "ss";
+  exists=`cat $cachefile | grep "$ss"`;
+  if [ "$exists" = "" ]; then
+     eval "$2=0";
+  else
+     eval "$2=1";
+  fi
+}
+
+function savecacheval () {
+  testcache "$1" "isincache";
+  # ss is set in testcache function
+  if [ $isincache -eq 0 ]; then
+     echo "$ss=$2" >> $cachefile;
+  else
+     newcache=`cat $cachefile | grep -v "$ss"`;
+     echo "$newcache" > $cachefile;
+     echo "$ss=$2" >> $cachefile;
+  fi
+}
+
+function readcacheval () {
+  striparg "$1" "ss";
+  cacheline=`cat $cachefile | grep "$ss"`;
+  val=`echo $cacheline | sed -e s/$ss=//`;
+  eval "$2=$val";
+}
+
+function testcompile () {
+
+  if [ ! -e $cachefile ]; then
+     echo "Creating cache ./$cachefile";
+     touch $cachefile;
+     cached=0;
+  else
+     testcache "$1" "cached";
+     if [ $cached -eq 1 ]; then
+        readcacheval "$1" "cacheval";
+     fi
+  fi
+
+  echo -n "Testing $1 compile: ";
+  rm -f run/hxd;
+
+  if [ $cached -eq 0 ]; then
+     ./configure $1 > /dev/null 2>&1;
+     rmobjfiles "$1";
+     make > /dev/null 2>&1;
+     if [ ! -e run/hxd ]; then
+        echo "no";
+        echo "  will skip all compiles using this option";
+        eval "$2=false";
+	savecacheval "$1" "0";
+     else
+        echo "yes";
+        eval "$2=true";
+	savecacheval "$1" "1";
+     fi
+  else
+     if [ $cacheval -eq 0 ]; then
+        echo "no (cached)";
+	eval "$2=false";
+     else
+        echo "yes (cached)";
+	eval "$2=true";
+     fi
+  fi
+}
+
+# test straight compiles
+  testcompile "$pt" "_pt";
+  testcompile "$cl" "_cl";
+  testcompile "$fo" "_fo";
+# testcompile "$pr" "_pr";
+  testcompile "$ci" "_ci";
+# testcompile "$co" "_co";
+# testcompile "$ne" "_ne";
+  testcompile "$sq" "_sq";
+# testcompile "$ip" "_ip";
+
+echo "-----------------------------------------";
+echo -n "Making the binaries...";
+
+if [ -e $bin ]; then
+   bincount=`ls -1 $bin | grep -c .`;
+   (( tarl = 12 - bincount ));
+   echo " ($bincount binaries made so far) [$tarl left]";
+else
+   echo " (0 binaries made so far) [making 12]";
+fi
+
+# pthread series
+if $_pt; then
+   maketarball "$pt" "pth";
+   $_ci && maketarball "$pt $ci" "pth.cph";
+   $_sq && maketarball "$pt $sq" "pth.sql"
+   $_ci && \
+   $_sq && maketarball "$pt $ci $sq" "pth.cph.sql";
+fi
+
+# clone series
+if $_cl; then
+   maketarball "$cl" "cln";
+   $_ci && maketarball "$cl $ci" "cln.cph";
+   $_sq && maketarball "$cl $sq" "cln.sql";
+   $_ci && \
+   $_sq && maketarball "$cl $ci $sq" "cln.cph.sql";
+fi
+
+# fork series
+if $_fo; then
+   maketarball "$fo" "frk";
+   $_ci && maketarball "$fo $ci" "frk.cph";
+   $_sq && maketarball "$fo $sq" "frk.sql";
+   $_ci && \
+   $_sq && maketarball "$fo $ci $sq" "frk.cph.sql";
+fi
+
+# clean up
+make distclean > /dev/null 2>&1;
+
+(( compiled_t = compiled + bincount ));
+
+# output a summary of what was accomplished
+echo "";
+echo "Binary statistics:";
+echo "   Successful builds this session: $compiled";
+echo "   Successful total builds: $compiled_t";
+echo "   Failed builds: $failed";

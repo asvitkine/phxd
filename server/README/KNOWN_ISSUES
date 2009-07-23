@@ -1,0 +1,34 @@
+Known Issues:
+
+1. attempting to download a file from an alias that points to the file
+   downloads the data fork of the alias (creating a null file of size 0
+   bytes)
+2. clone doesn't compile on debian 2.x
+3. remote queueing doesn't work (when clone is enabled)
+4. SIGTSTP (aka. suspend, triggered by control-z) doesn't suspend shxd
+5. if you delete the log file while the server is running it won't be recreated
+   until you start the server up again
+6. compress only works when hope is enabled and client is hope'd
+7. sql and hope options conflict with ipv6 option
+8. on os x, if you enable cipher, your server will crash if a person is
+   disconnected while downloading
+
+Temporary Solutions:
+
+1. don't create aliases to files (if you *really* need a file to be in two
+   places at once, use symlinks for now)
+2. upgrade to debian 3.0 if you can, otherwise wait for a fix
+3. not much you can do, if it's broke, it's broke. wait for a fix
+4. this is on purpose and was for development reasons. use shxd in `screen'
+   if you need to be able to switch out from a fixed process.
+5. SIGHUP the server after deleting the log file and it will be recreated
+6. this is not really a bug but a requirement, i will try to remove the
+   requirement much later on, but it's out of my realm right now as I am
+   much more focused and tuned in on other things
+7. you can try to compile ipv6 with sql and/or hope enabled but it will
+   probably fail with an error. just compile without sql and hope to get ipv6
+   support.
+8. don't enable cipher. it doesn't crash with just hope enabled, so if you need
+   hope (ie. to use compress) then that is ok. Otherwise consider other
+   other platforms if you need cipher support. We believe it has something to
+   do with the openssl on os x.

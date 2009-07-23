@@ -1,0 +1,9 @@
+# banlist, for details on this file, read `doc/banlist' in the shxd folder
+
+# lines starting with `#' are ignored
+
+#expires   name      login   user   address      message
+#never     *         guest   root   *            dont horline as root!
+#never     unnamed   guest   *      *            get a name!
+#never     Guest     *       *      *            Hotline 1.5 sucks!
+#never     *         admin   *      !127.0.0.1   Admin must log in locally!

@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# this script's soul  purpose is to illustrate
+# the new feature of shxd-0.1.58, the $ACCOUNT
+# variable. Contains  the  login  name  of the
+# person running the script.
+
+# script prefers bash
+[ -f /bin/bash ] && SHELL=/bin/bash
+
+# test for bash on FreeBSD/OpenBSD
+[ -f /usr/local/bin/bash ] && SHELL=/usr/local/bin/bash
+
+echo -n "$ACCOUNT";

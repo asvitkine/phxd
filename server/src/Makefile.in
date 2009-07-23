@@ -1,0 +1,126 @@
+#
+# shxd-0.2 makefile script
+# February 2, 2002
+# Devin Teske <devinteske@hotmail.com>
+#
+
+srcdir          = @srcdir@
+VPATH           = @srcdir@
+
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA    = @INSTALL_DATA@
+
+# Where to install
+prefix          = @prefix@
+exec_prefix     = ${prefix}
+
+# settings from configure
+exec_suffix     = @exec_suffix@
+top_srcdir      = @top_srcdir@
+bindir          = @bindir@
+libexecdir      = @libexecdir@
+sysconfdir      = @sysconfdir@
+localstatedir   = @localstatedir@
+
+# Gotta love the DOS legacy
+#
+HXD_EXE         = $(top_srcdir)/run/hxd$(exec_suffix)
+TRACKER_EXE     = $(top_srcdir)/bin/hxtrackd$(exec_suffix)
+
+DEFAULT_PREFIX  = $(prefix)
+
+CC              = @CC@
+MAKEDEPEND      = @MAKEDEPEND@
+INSTALL         = @INSTALL@
+
+DEFS            = @DEFS@ @CDEFS@
+LDFLAGS         = @LDFLAGS@
+SYS_INCLUDES    = @SYS_INCLUDES@
+INCLUDE         = -I$(top_srcdir)/include
+CFLAGS          = @CFLAGS@ $(INCLUDE) $(SYS_INCLUDES) $(DEFS)
+
+# Libraries
+
+# LIBOBJS holds missing objects (determined from AC_REPLACE_FUNC)
+LIBOBJS         = @LIBOBJS@
+HXDLIBS         = @HXDLIBS@
+SHAREDLIBS      = @SHAREDLIBS@
+
+# Objects
+SHARED_OBJS     = fd.o version.o xmalloc.o decode.o \
+                  @SHARED_OBJS@ $(LIBOBJS)
+HXD_OBJS        = rcv.o accounts.o chat.o commands.o transactions.o    \
+                  files.o hlserver.o htxf.o hxd_config.o ident.o       \
+		  news.o string_m.o @HXDOBJS@ hxd_main.o hxd_hlwrite.o \
+		  hxd_tracker.o
+TRACKER_OBJS    = hxd_config.o hxtrackd_main.o hxtrackd_tracker.o
+
+# Build Targets
+TARGETS         = @TARGETS@
+hxddirs         = @hxddirs@
+
+MV              = @MV@
+RM              = @RM@
+SHELL           = /bin/sh
+
+############################################### Rules
+
+.c.o:
+	$(CC) $(CFLAGS) -c $(<)
+
+noargs: all
+
+all: $(TARGETS)
+
+install:
+
+hxddirs:
+	@for dir in $(hxddirs); do \
+	   echo "Making all in $$dir..."; \
+	   (cd $$dir;$(MAKE) $(MFLAGS) prefix="$(prefix)" all)||exit 1;\
+	done
+
+$(HXD_EXE): hxddirs $(SHARED_OBJS) $(HXD_OBJS)
+	$(CC) $(LDFLAGS) $(DEFS) $(HXD_OBJS) $(SHARED_OBJS) $(HXDLIBS) $(SHAREDLIBS) -o $@
+	@echo "make: success -> binary should be in \`run'"
+
+$(TRACKER_EXE): hxddirs $(SHARED_OBJS) $(TRACKER_OBJS)
+	$(CC) $(LDFLAGS) $(DEFS) $(TRACKER_OBJS) $(SHARED_OBJS) $(SHAREDLIBS) -o $@
+	@echo "make: success -> binary should be in \`bin'"
+
+hxd_main.o: main.c $(top_srcdir)/include/main.h
+	$(CC) -c $(CFLAGS) -DONLY_SERVER main.c -o $@
+
+hxtrackd_main.o: main.c $(top_srcdir)/include/main.h
+	$(CC) -c $(CFLAGS) -DONLY_TRACKER main.c -o $@
+
+hxd_tracker.o: tracker.c $(top_srcdir)/include/main.h
+	$(CC) -c $(CFLAGS) -DONLY_SERVER tracker.c -o $@
+
+hxtrackd_tracker.o: tracker.c $(top_srcdir)/include/main.h
+	$(CC) -c $(CFLAGS) -DONLY_TRACKER tracker.c -o $@
+
+hxd_hlwrite.o: hlwrite.c $(top_srcdir)/include/main.h
+	$(CC) -c $(CFLAGS) -DONLY_SERVER hlwrite.c -o $@
+
+acctedit:
+	$(CC) $(LDFLAGS) $(CFLAGS) -o $(top_srcdir)/bin/acctedit $(top_srcdir)/rorsch/acctedit.c -lncurses
+	@echo "make: success -> binary should be in \`bin'"
+
+tlist:
+	$(CC) $(LDFLAGS) $(CFLAGS) -o $(top_srcdir)/bin/tlist $(top_srcdir)/rorsch/tlist.c
+	@echo "make: success -> binary should be in \`bin'"
+
+clean:
+	$(RM) -f *.o
+	@for dir in $(hxddirs); do \
+	   echo "Making $@ in $$dir..."; \
+	   (cd $$dir;$(MAKE) $(MFLAGS) prefix="$(prefix)" $@);\
+	done
+
+distclean:
+	$(RM) -f *.o Makefile
+	@for dir in $(hxddirs); do \
+	   echo Making distclean in $$dir; \
+	   (cd $$dir;$(MAKE) $(MFLAGS) prefix="$(prefix)" distclean);\
+	done

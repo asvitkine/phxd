@@ -1,0 +1,307 @@
+#!/bin/bash
+
+bin="shxd_binaries";
+cachefile="mkbin.cache";
+
+if [ $# -ge 1 ]; then
+   case "$1" in
+   clean)
+      rm -Rf $bin;
+      make clean > /dev/null 2>&1;;
+   distclean)
+      rm -Rf $bin;
+      rm -f $cachefile;
+      make distclean > /dev/null 2>&1;;
+   uncache)
+      rm -f $cachefile;;
+   *)
+      exr="$0";
+      while [ "`echo $exr | grep ./`" != "" ]; do
+         exr=`echo "$exr" | sed -e s/.\\\\//\\\\//g`;
+      done
+      exr=`echo $exr | sed -e s/\\\\///`;
+      echo "Usage: $exr [clean|distclean|uncache]";;
+   esac
+   exit 0;
+fi
+
+# excombine:  performs an action for every combination in a list of items
+# syntax:     excombine <list> <range> <action>
+# parameters:
+#
+#   list      A list of of items to be used in combination. Delimited by
+#             whitespace (space, tab, or newline by default)
+#             see `IFS' (the Internal Field Separator) in bash(1).
+#
+#   range     A number dictating how many items appear in the combinations.
+#             For example: if the number `5' is used, only combinations that
+#             use a total of 5 items will be calculated. If you pass the
+#             number `0', all ranges will be calculated. You may also specify
+#             a range of ranges to be calculated. This can be done by
+#             separating two numbers by a series of two periods. For example:
+#             passing `1..2' will (if possible) calculate all combinations
+#             where both, the total of items in the combination are one and
+#             also where the total of items in the combination is two. If the
+#             range exceeds the possible total of items, no error occurs. The
+#             function simply does as many possible ranges. If the range is
+#             negative, it will not cause an error. Since this function is
+#             based on mathematics, negative values are accepted but in theory
+#             and practice, have no meaning. Avoid using negative values as
+#             they will have unpredictable results.
+#
+#   action    A string that is evaluated for each combination. The special
+#             variable `items' holds the current combination. You can access
+#             this variable by escaping it in expansion notation. For example:
+#             "\$items" used in the action string, will be expanded into the
+#             current combination for each iteration.
+#
+# copying:    The function `excombine' and all code herein may not be used in
+#             any instance other than the code contained herein this file or
+#             an exact digital copy of this file. The function excombine is
+#             protected by federal laws applying to intellectual property. All
+#             rights are reserved. Duplicates of this file may be produced as
+#             long as every portion of it is the same with exception to
+#             allowances in differences of creation dates. You may not augment
+#             to or subtract from this file in any way. This includes but is
+#             not limited to: adding a resource fork, adding new functions,
+#             modifying use of `excombine', modifying any portion of the data
+#             fork, incorporating the shell script into another program, using
+#             this program in any program other than a licensed shell, using
+#             `excombine' indirectly through this program, running this program
+#             from a subshell of another program, creating a program that runs
+#             a command on the command line that indirectly uses this program
+#             in any attempt to gain functionality of `excombine', and/or
+#             renaming the `excombine' function in attempts to void this
+#             license. Devin Teske reserves the right to terminate your use of
+#             this program and all programs attempting to use any part of this
+#             program herein. The definition of `terminate' is subject to
+#             change without notice. In this document it shall be determined to
+#             mean the shredding of all documents and or transfer of
+#             ownership of all programs violating this agreement. All features,
+#             services, terms and conditions subject to change without notice.
+#             Technical support is not implied nor supplied in any way. You may
+#             definitely not resell any code contained herein under penalty of
+#             law. If you do not agree to these conditions you must not execute
+#             this code. By executing any portion of this file herein you agree
+#             to all aforementioned terms an conditions.
+
+function excombine { ## 1.0 by Devin Teske, Copyright 2002.All Rights Reserved.
+  local a b c d e g h i j k l m n p r s t u v w x y z items;[ "`echo $2|grep \
+  \\.\\.`" = "" ]&&i=false||i=true;if $i;then r=`echo $2|tr . ' '`;s=`echo $r|\
+  awk '{print $1}'`;e=`echo $r|awk '{print $2}'`;else s=$2;e=$2;fi;n=`echo $1|\
+  awk '{print NF}'`;if [ $s -eq 0 -a $e -eq 0 ];then s=1;e=$n;fi;[ $s -lt 0 ]\
+  &&((s=s*(0-1)));[ $e -lt 0 ]&&((e=e*(0-1)));[ $s -eq 0 ]&&s=1;[ $e -eq 0 ]&&\
+  e=1;[ $s -le $n ]||s=$n;[ $e -le $n ]||e=$n;[ $s -le $e ]&&i=1||((i=(0-1)));
+  for ((j=s;j<=e;j=j+i));do l="";m="";items="";for ((x=1;x<=j;x=x+1));do l="$l\
+  $x";done;for ((x=j;x>0;x=x-1));do m="$m `expr $n - $x + 1`";done;((g=n-j+1));
+  z=1;d=1;t=0;x=0;for ((t=0;t<j;t=t+1));do ((z=z*(g+t)));((d=d*(t+1)));done;((\
+  st=z/d-1));for ((h=1;h<=j;h=h+1));do v="v=\`echo $l|awk '{print \$$h}'\`";
+  eval $v;w="w=\`echo $1|awk '{print \$$v}'\`";eval $w;items="$items $w";done
+  eval $3;for ((x=1;x<=st;x=x+1));do u=""; items="";for ((y=j;y>0;y=y-1));do
+  b="b=\`echo $m|awk '{print \$$y}'\`";c="c=\`echo $l|awk '{print \$$y}'\`";
+  eval $b;eval $c;if [ $c -lt $b ];then p=$y;y=0;fi;done;for ((y=1;y<p;y=y+1));
+  do k="k=\`echo $l|awk '{print \$$y}'\`";eval $k;u="$u $k";done;a="a=\`echo \
+  $l|awk '{print \$$p}'\`";eval $a;for ((y=p;y<=j;y=y+1));do u="$u `expr $a + \
+  $y - $p + 1`";done;l=$u;for ((h=1;h<=j;h=h+1));do v="v=\`echo $l|awk '{print\
+  \$$h}'\`";eval $v;w="w=\`echo $1|awk '{print \$$v}'\`";eval $w;items="$items\
+  $w";done;eval $3;done;done
+}
+
+if [ ! -e $bin ]; then
+   mkdir $bin;
+fi
+
+# statistic vars
+compiled=0;
+failed=0;
+
+# define constants
+pt="--enable-htxf-pthread"; pt_s=`echo "$pt" | tr -d "-"`;
+cl="--enable-htxf-clone";   cl_s=`echo "$cl" | tr -d "-"`;
+fo="--enable-htxf-fork";    fo_s=`echo "$fo" | tr -d "-"`;
+ho="--enable-hope";         ho_s=`echo "$ho" | tr -d "-"`;
+ci="--enable-cipher";       ci_s=`echo "$ci" | tr -d "-"`;
+co="--enable-compress";     co_s=`echo "$co" | tr -d "-"`;
+sq="--enable-sql";          sq_s=`echo "$sq" | tr -d "-"`;
+ip="--enable-ipv6";         ip_s=`echo "$ip" | tr -d "-"`;
+
+function rmobjfiles () {
+  ss=`echo "$1" | tr -d "-"`;
+  rm -f src/rcv.o src/hxd_main.o;
+  [ "`echo "$ss" | grep -v "$pt_s"`" = "" ] && rm -f src/files.o src/htxf.o \
+    src/hlserver.o;
+  [ "`echo "$ss" | grep -v "$cl_s"`" = "" ] && rm -f src/files.o src/htxf.o \
+    src/hlserver.o;
+  [ "`echo "$ss" | grep -v "$fo_s"`" = "" ] && rm -f src/files.o src/htxf.o \
+    src/hlserver.o;
+  [ "`echo "$ss" | grep -v "$pr_s"`" = "" ] && rm -f src/files.o;
+  [ "`echo "$ss" | grep -v "$ci_s"`" = "" ] && rm -f src/files.o src/htxf.o \
+    src/compress/compress.o src/decode.o src/hxd_hlwrite.o src/chat.o \
+    src/decode.o;
+  [ "`echo "$ss" | grep -v "$co_s"`" = "" ] && rm -f src/files.o src/chat.o \
+    src/cipher.o src/decode.o src/hlserver.o src/hxd_hlwrite.o;
+  [ "`echo "$ss" | grep -v "$ne_s"`" = "" ] && rm -f src/hxd_hlwrite.o \
+    src/files.o src/hlserver.o;
+  [ "`echo "$ss" | grep -v "$sq_s"`" = "" ] && rm -f src/files.o src/htxf.o \
+    src/decode.o src/hxd_hlwrite.o src/commands.o src/hlserver.o src/chat.o \
+    src/sql/sql.o;
+  [ "`echo "$ss" | grep -v "$ip_s"`" = "" ] && rm -f src/files.o src/htxf.o \
+    src/hlserver.o src/hxd_config.o src/ident.o src/hxd_tracker.o \
+    src/commands.o;
+}
+
+function maketarball () {
+  (( tarcount = tarcount + 1 ));
+  if [ ! -e $bin/shxd3.$2.tgz ]; then
+    options=`echo $1 | sed s/--enable-//g | sed s/' '/', '/g`;
+    echo -n "$tarcount: Making '$options': ";
+    rm -f run/hxd;
+    echo -n .;
+    if ! ( ./configure $1 > /dev/null 2>&1 ); then
+      echo -e "no\n\
+      build failed due to an error in the configure process.";
+      return;
+    else
+      echo -n .;rmobjfiles "$prevmake";prevmake="$1";
+      echo -n .;rmobjfiles "$1";
+      echo -n .;( make > /dev/null 2>&1 ) || echo -e "no\n\
+      build failed due to an error in the make process.";
+      if [ ! -e run/hxd ]; then (( failed = failed + 1 ));
+      else cp -R run hxd; abt="This binary was compiled with the following ";
+        echo -n .;abt="$abt enabled options:\n\n$1";printf $abt > hxd/ABOUT;
+        cp -R doc hxd/doc;cp doc/INSTALL hxd/INSTALL;
+        rm -f hxd/doc/MakingBinaries hxd/README;
+        tar czf $bin/shxd3.$2.tgz hxd
+        rm -Rf hxd;
+        echo "yes";(( compiled = compiled + 1 ));
+      fi
+    fi
+  fi
+}
+
+function striparg () {
+  ss=`echo "$1" | tr -d "-" | tr -d " "`;
+  eval "$2=$ss";
+}
+
+function testcache () {
+  striparg "$1" "ss";
+  exists=`cat $cachefile | grep "$ss"`;
+  if [ "$exists" = "" ]; then
+     eval "$2=0";
+  else
+     eval "$2=1";
+  fi
+}
+
+function savecacheval () {
+  testcache "$1" "isincache";
+  # ss is set in testcache function
+  if [ $isincache -eq 0 ]; then
+     echo "$ss=$2" >> $cachefile;
+  else
+     newcache=`cat $cachefile | grep -v "$ss"`;
+     echo "$newcache" > $cachefile;
+     echo "$ss=$2" >> $cachefile;
+  fi
+}
+
+function readcacheval () {
+  striparg "$1" "ss";
+  cacheline=`cat $cachefile | grep "$ss"`;
+  val=`echo $cacheline | sed -e s/$ss=//`;
+  eval "$2=$val";
+}
+
+function testcompile () {
+  if [ ! -e $cachefile ]; then
+    echo "Creating cache ./$cachefile";touch $cachefile;cached=0;
+  else
+    testcache "$1" "cached";[ $cached -eq 1 ]&&readcacheval "$1" "cacheval";
+  fi
+  echo -n "Testing $1 compile: ";rm -f run/hxd;
+  if [ $cached -eq 0 ]; then
+     echo -n .;./configure $1 > /dev/null 2>&1;
+     echo -n .;rmobjfiles "$1";
+     echo -n .;make > /dev/null 2>&1;
+     if [ ! -e run/hxd ]; then
+        echo "no";echo "  will skip all compiles using this option";
+        eval "$2=false";savecacheval "$1" "0";
+     else
+        echo "yes";eval "$2=true";savecacheval "$1" "1";
+     fi
+  else
+     if [ $cacheval -eq 0 ]; then echo "no (cached)";eval "$2=false";
+     else echo "yes (cached)";eval "$2=true";fi
+  fi
+}
+
+# initialize variables
+prevmake="";tarcount=0;
+
+# test straight compiles
+testcompile "$pt"     "_pt";
+testcompile "$cl"     "_cl";
+testcompile "$fo"     "_fo";
+testcompile "$ho"     "_ho";
+testcompile "$ho $ci" "_ci";
+testcompile "$co"     "_co";
+testcompile "$sq"     "_sq";
+testcompile "$ip"     "_ip";
+
+function make_config {
+  local e n x cipher hope;
+  # return if hope is not enabled with cipher
+  cipher="cipher=\`echo $@ | grep '\\$ci'\`"; eval $cipher;
+  [ "$cipher" = "" ] && cipher=false || cipher=true;
+  hope="hope=\`echo $@ | grep '\\$ho'\`"; eval $hope;
+  [ "$hope" = "" ] && hope=false || hope=true;
+  ( $cipher && ! $hope ) && return;
+  # name the binary and check for failed tests
+  x=false;eval "e=\`echo $@|grep '\\$pt'\`";
+  if [ "$e" != "" ];then $_pt||x=true;n="pth";fi
+  eval "e=\`echo $@|grep '\\$cl'\`";
+  if [ "$e" != "" ];then $_cl||x=true;n="cln";fi
+  eval "e=\`echo $@|grep '\\$fo'\`";
+  if [ "$e" != "" ];then $_fo||x=true;n="frk";fi
+  eval "e=\`echo $@|grep '\\$ho'\`";
+  if [ "$e" != "" ];then $_ho||x=true;n="$n.hop";fi
+  eval "e=\`echo $@|grep '\\$ci'\`";
+  if [ "$e" != "" ];then $_ci||x=true;n="$n.cph";fi
+  eval "e=\`echo $@|grep '\\$co'\`";
+  if [ "$e" != "" ];then $_co||x=true;n="$n.cmp";fi
+  eval "e=\`echo $@|grep '\\$sq'\`";
+  if [ "$e" != "" ];then $_sq||x=true;n="$n.sql";fi
+  eval "e=\`echo $@|grep '\\$ip'\`";
+  if [ "$e" != "" ];then $_ip||x=true;n="$n.ip6";fi
+  $x || eval "maketarball \"$@\" \"$n\"";
+}
+
+echo "-----------------------------------------";
+echo -n "Making the binaries...";
+
+if [ -e $bin ]; then
+   bincount=`ls -1 $bin | grep -c .`;(( tarl = 72 - bincount ));
+   echo " ($bincount binaries made so far) [$tarl left]";
+else echo " (0 binaries made so far) [making 72]";fi
+
+#make the base packages
+make_config "$fo";
+make_config "$cl";
+make_config "$pt";
+
+excombine "$ho $ci $co $sq $ip" "0" "make_config $fo \$items"
+excombine "$ho $ci $co $sq $ip" "0" "make_config $cl \$items"
+excombine "$ho $ci $co $sq $ip" "0" "make_config $pt \$items"
+
+# clean up
+make distclean > /dev/null 2>&1;
+
+(( compiled_t = compiled + bincount ));
+
+# output a summary of what was accomplished
+echo "";
+echo "Binary statistics:";
+echo "   Successful builds this session: $compiled";
+echo "   Successful total builds: $compiled_t";
+echo "   Failed builds: $failed";

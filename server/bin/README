@@ -1,0 +1,32 @@
+This folder is where all the non-hxd stuff is after compile.
+
+The unix hotline tracker server will end up in this folder. (hxtrackd)
+
+   From the root directory of shxd:
+
+   % ./configure --enable-tracker-server
+   % make
+
+   To run the tracker server from this folder:
+
+   % ./hxtrackd
+
+The unix hotline account editor will end up in this folder. (acctedit)
+
+   From the root directory of shxd:
+
+   % ./configure
+   % make acctedit
+
+   `ncurses-bin' `ncurses5-lib' (or `ncurses4-lib') must be installed.
+
+The unix hotline tracker lister will end up in this folder. (tlist)
+
+   From the root directory of shxd:
+
+   % ./configure
+   % make tlist
+
+   This program is a standalone executable that lists tracker server
+   contents. Useful if you want to test your tracker server to see if
+   it's working, or if you just want to see what is registered on it.

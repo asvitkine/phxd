@@ -1,0 +1,39 @@
+Things to do...
+
+This file contains a list of things that i want to accomplish for both hx AND
+hxd. This file is not a promise on my part to deliver the goods. It is merely a
+tracking list of ideas that surface in my many wanderings. Feel free to partake
+of my stringy soup of festive maticulations, happy mastication fellow user.
+
+===============================================================================
+- [hxd] add log section to hxd.conf to customize logging
+- [hxd] add regular expression matching to 0wn, access, mon, and alert
+- [hxd] add invisible login
+- [hxd] make tracker registering threaded so that startup doesn't take so long
+- [hxd] add account-based agreements
+- [hxd] in hxd.conf have option to allow file downloads of a certain size
+  regardless of limits imposed on transfers
+- [hxd] Mac OS X: Add support for HFS+ resource forks
+  Mac invisible files
+  native hfs comments
+- [hxd] add scripting engine
+- [hxd] add mutli-function news (flat, threaded, and xml styles)
+- [hxd] add folder download/upload
+- [hx] modularize hx
+- [hxd] Add standardized errors messages
+- [hxd] implement shxd.rfc01 (http://synhxd.sf.net/shxd.rfc01.txt)
+- [hx] Add /1..9 commands to quickly switch between chats (/0 is pub chat)
+  first 9 chats are mapped in ascending order, further chats are not mapped.
+  You can remap a chat with /mapchat <cid> <#> (0 removes the map).
+- [hxd] Add conn_max and individual_exec to the account conf file parsing
+- [hxd] Add .hxdaccess feature
+- [hxd] Add server-side /password for pchats
+- [hx] Add optional message parameter to kick and ban to issue a final message
+  to the victim
+- [hxd] Add $HXDOUTPUT environment variable for shell scripts (so the script
+  can decide whether it outputs to chat or if it outputs to a private message)
+- [hxd] Do not allow users to give themselves more priveleges or give others
+  more priveleges than they have themselves (including new accounts they
+  create).
+- [hxd] Add groups system
+- [hxd] Add administer accounts (HL 1.8 feature)

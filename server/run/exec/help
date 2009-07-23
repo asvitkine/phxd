@@ -1,0 +1,111 @@
+#!/bin/sh
+
+# script prefers bash
+[ -f /bin/bash ] && SHELL=/bin/bash
+
+# test for bash on FreeBSD/OpenBSD
+[ -f /usr/local/bin/bash ] && SHELL=/usr/local/bin/bash
+
+out="$out""\r\r";
+
+case $# in
+0)
+   out="$out""¥ List of server commands (/help <command>)\r";
+   out="$out""   0wn       access    alert     away\r";
+   out="$out""   broadcast color     g0away    mon\r";
+   out="$out""   visible   users     exec      find\r";
+   out="$out""   help      uptime    uname     ?\r";
+   out="$out""   netstat";
+
+   printf "$out";
+   exit 0;;
+esac
+
+case $1 in
+0wn)
+   out="$out""Usage: /0wn <uid> <property>[=]<value>\r";
+   out="$out""Description: this is a complex command, for\r";
+   out="$out""   full details, read docs/Commands.";;
+access)
+   out="$out""Usage: /access <uid> <property>=<value>\r";
+   out="$out""Description: this is a complex command, for\r";
+   out="$out""   full details, read docs/Commands.";;
+alert)
+   out="$out""Usage: /alert <uid> <msg>\r";
+   out="$out""Description: alert produces a broadcast-like\r";
+   out="$out""   message to a specific connected user.";;
+away)
+   out="$out""Usage: /away\r";
+   out="$out""Description: makes your name color gray-out\r";
+   out="$out""   signifying that you are not actively doing\r";
+   out="$out""   anything on that server.";;
+broadcast)
+   out="$out""Usage: /broadcast <msg>\r";
+   out="$out""Description: broadcast sends a message to all\r";
+   out="$out""   connected users (cannot be replied to)";;
+color)
+   out="$out""Usage: /color <color>\r";
+   out="$out""Description: color changes the color of your\r";
+   out="$out""   name in the user list.";;
+g0away)
+   out="$out""Usage: /g0away\r";
+   out="$out""Description: g0away (pronounced as \"go away\")\r";
+   out="$out""   toggles your visibility in the user list.";;
+mon)
+   out="$out""Usage: /mon <uid>\r";
+   out="$out""Description: mon gives a specific connected\r";
+   out="$out""   user the privelege to private message.";;
+visible)
+   out="$out""Usage: /visible\r";
+   out="$out""Description: visible toggles your visibility\r";
+   out="$out""   in the user list.";;
+users)
+   out="$out""Usage: /users\r";
+   out="$out""Description: users allows you to see\r";
+   out="$out""   invisible users.";;
+exec)
+   out="$out""Usage: /exec <command>\r";
+   out="$out""Description: exec executes the command if\r";
+   out="$out""   either a binary or script exists in the\r";
+   out="$out""   folder named exec in the root of the shxd\r";
+   out="$out""   folder. This command has been obsoleted.\r";
+   out="$out""   You may now precede script names with a\r";
+   out="$out""   \`/' character to execute them.";;
+find)
+   out="$out""Usage: /find [-qv] <name>\r";
+   out="$out""Description: find searches the files folder\r";
+   out="$out""   for matches of the name passed and returns\r";
+   out="$out""   the matching files. -q does quiet mode. -v\r";
+   out="$out""   shows the version.";;
+help)
+   out="$out""Usage: /help\r";
+   out="$out""Description: help executes the help shell\r";
+   out="$out""   script or help binary in the exec folder\r";
+   out="$out""   of the shxd folder if it exists.";;
+uptime)
+   out="$out""Usage: /uptime [-V]\r";
+   out="$out""Description: executes the uptime binary if it\r";
+   out="$out""   exists in the exec folder at the root of\r";
+   out="$out""   the shxd folder.";;
+uname)
+   out="$out""Usage: /uname [-a]\r";
+   out="$out""Description: uname executes the uname binary\r";
+   out="$out""   if it exists in the exec folder at the\r";
+   out="$out""   root of the shxd folder.";;
+?)
+   out="$out""Usage: /? [-r]\r";
+   out="$out""Description: outputs a list of executable\r";
+   out="$out""   commands in the exec folder at the root of\r";
+   out="$out""   the shxd folder. the -r parameter rebuilds\r";
+   out="$out""   the cache for this script. it caches\r";
+   out="$out""   output for faster responses.";;
+netstat)
+   out="$out""Usage: /netstat\r";
+   out="$out""Description: outputs a list of current number\r";
+   out="$out""   of users connected, total active\r";
+   out="$out""   downloads, and total active uploads.";;
+*)
+   out="$out""help: $1: unknown command";;
+esac
+
+printf "$out";

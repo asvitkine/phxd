@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# script prefers bash
+[ -f /bin/bash ] && SHELL=/bin/bash
+
+# test for bash on FreeBSD/OpenBSD
+[ -f /usr/local/bin/bash ] && SHELL=/usr/local/bin/bash
+
+printf "\r`uptime $@`"

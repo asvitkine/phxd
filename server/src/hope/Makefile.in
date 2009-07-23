@@ -1,0 +1,43 @@
+############################################### Compiler 
+
+# do not change anything in this section
+
+srcdir       = @srcdir@
+top_srcdir   = @top_srcdir@
+VPATH        = @srcdir@
+
+CC           = @CC@
+MAKEDEPEND   = @MAKEDEPEND@
+INSTALL      = @INSTALL@
+
+DEFS         = @DEFS@ @CDEFS@
+LDFLAGS      = @LDFLAGS@
+SYS_INCLUDES = @SYS_INCLUDES@
+INCLUDE      = -I$(top_srcdir)/include
+CFLAGS       = @CFLAGS@ $(INCLUDE) $(SYS_INCLUDES) $(DEFS)
+
+MV           = @MV@
+RM           = @RM@
+SHELL        = /bin/sh
+
+############################################### Custom
+
+# Objects to compile in this folder on `make all'
+OBJS  = hmac.o md5.o sha.o haval.o rand.o 
+
+############################################### Rules
+
+# no need to change anything below
+
+.c.o:
+	$(CC) $(CFLAGS) -c $(<)
+
+noargs: all
+
+all: $(OBJS)
+
+clean:
+	$(RM) -f *.o
+
+distclean: clean
+	$(RM) -f Makefile
