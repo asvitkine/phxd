@@ -2093,16 +2093,20 @@ else
      #include <stdlib.h>
      #include <stddef.h>
      #endif
-   
-EOF
-if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
-  egrep " socklen_t[^a-zA-Z_0-9] " >/dev/null 2>&1; then
-  rm -rf conftest*
-  ac_cv_type_socklen_t=yes
-else
-  rm -rf conftest*
-  ac_cv_type_socklen_t=no
-  
+
+int main() {                                                                              
+ socklen_t foo = (socklen_t) 0;                                                           
+; return 0; }                                                                             
+EOF                                                                                       
+if { (eval echo configure:3301: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then   
+  rm -rf conftest*                                                                        
+  ac_cv_type_socklen_t=yes                                                                
+else                                                                                      
+  echo "configure: failed program was:" >&5                                               
+  cat conftest.$ac_ext >&5                                                                
+  rm -rf conftest*                                                                        
+  ac_cv_type_socklen_t=no  
+
 fi
 rm -f conftest*
 
