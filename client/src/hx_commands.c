@@ -2980,7 +2980,7 @@ expand_path (struct htlc_conn *htlc, struct hx_chat *chat, char *path, int len, 
    epchr = 0;
    ambig = 0;
    for (fh = cfl->fh; (u_int32_t)((char *)fh - (char *)cfl->fh) < cfl->fhlen;
-        (char *)fh += flen + SIZEOF_HL_DATA_HDR) {
+        fh = (struct hl_filelist_hdr *)((char*)fh + flen + SIZEOF_HL_DATA_HDR)) {
       L16NTOH(flen, &fh->len);
       L32NTOH(fnlen, &fh->fnlen);
       if (fnlen >= len && !strncmp(fh->fname, ent, len)) {
@@ -3059,7 +3059,7 @@ glob_remote (char *path, int *npaths)
          continue;
 
       for (fh = cfl->fh; (u_int32_t)((char *)fh - (char *)cfl->fh) < cfl->fhlen;
-           (char *)fh += flen + SIZEOF_HL_DATA_HDR) {
+           fh = (struct hl_filelist_hdr *)((char *)fh + flen + SIZEOF_HL_DATA_HDR)) {
          L16NTOH(flen, &fh->len);
          L32NTOH(fnlen, &fh->fnlen);
          len = strlen(cfl->path) + 1 + fnlen + 1;
@@ -3142,7 +3142,7 @@ exists_remote (struct htlc_conn *htlc, char *path)
       return 0;
 
    for (fh = cfl->fh; (u_int32_t)((char *)fh - (char *)cfl->fh) < cfl->fhlen;
-        (char *)fh += flen + SIZEOF_HL_DATA_HDR) {
+        fh = (struct hl_filelist_hdr *)((char *)fh + flen + SIZEOF_HL_DATA_HDR)) {
       L16NTOH(flen, &fh->len);
       L32NTOH(fnlen, &fh->fnlen);
       if ((int)fnlen == len && !strncmp(fh->fname, ent, len))
