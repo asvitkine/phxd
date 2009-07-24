@@ -3331,12 +3331,12 @@ fi
 
 # Check for type in sys/socket.h
 echo $ac_n "checking for socklen_t""... $ac_c" 1>&6
-echo "configure:3336: checking for socklen_t" >&5
+echo "configure:3283: checking for socklen_t" >&5
 if eval "test \"`echo '$''{'ac_cv_type_socklen_t'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
    cat > conftest.$ac_ext <<EOF
-#line 3341 "configure"
+#line 3288 "configure"
 #include "confdefs.h"
  #include <sys/types.h>
      #include <sys/socket.h>
@@ -3345,23 +3345,26 @@ else
      #include <stddef.h>
      #endif
    
+int main() {
+ socklen_t foo = (socklen_t) 0; 
+; return 0; }
 EOF
-if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
-  egrep " socklen_t[^a-zA-Z_0-9] " >/dev/null 2>&1; then
+if { (eval echo configure:3301: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
-  ac_cv_type_socklen_t="yes"
+  ac_cv_type_socklen_t=yes
 else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
   rm -rf conftest*
-  ac_cv_type_socklen_t="no"
+  ac_cv_type_socklen_t=no
   
 fi
 rm -f conftest*
 
-
 fi
 
 echo "$ac_t""$ac_cv_type_socklen_t" 1>&6
-if test "$ac_cv_type_socklen_t" = "no" ; then
+if test $ac_cv_type_socklen_t = no; then
    cat >> confdefs.h <<\EOF
 #define socklen_t int
 EOF
