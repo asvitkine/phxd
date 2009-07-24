@@ -1057,17 +1057,8 @@ if test "${enable_htxf_clone+set}" = set; then
 
 fi
 
-
-# only enable htxf when something that uses it is enabled
-if test "$hotline_server" = "yes" -o "$hotline_client" = "yes"; then
-   if test "$use_pthread" = "yes" ; then
-      echo "   pthreads enabled for file transfers"
-      cat >> confdefs.h <<\EOF
-#define CONFIG_HTXF_PTHREAD 1
-EOF
-
-      echo $ac_n "checking how to run the C preprocessor""... $ac_c" 1>&6
-echo "configure:1071: checking how to run the C preprocessor" >&5
+echo $ac_n "checking how to run the C preprocessor""... $ac_c" 1>&6
+echo "configure:1129: checking how to run the C preprocessor" >&5
 # On Suns, sometimes $CPP names a directory.
 if test -n "$CPP" && test -d "$CPP"; then
   CPP=
@@ -1082,13 +1073,13 @@ else
   # On the NeXT, cc -E runs the code through the compiler's parser,
   # not just through cpp.
   cat > conftest.$ac_ext <<EOF
-#line 1086 "configure"
+#line 1144 "configure"
 #include "confdefs.h"
 #include <assert.h>
 Syntax Error
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:1092: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:1150: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   :
@@ -1099,13 +1090,13 @@ else
   rm -rf conftest*
   CPP="${CC-cc} -E -traditional-cpp"
   cat > conftest.$ac_ext <<EOF
-#line 1103 "configure"
+#line 1161 "configure"
 #include "confdefs.h"
 #include <assert.h>
 Syntax Error
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:1109: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:1167: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   :
@@ -1116,13 +1107,13 @@ else
   rm -rf conftest*
   CPP="${CC-cc} -nologo -E"
   cat > conftest.$ac_ext <<EOF
-#line 1120 "configure"
+#line 1178 "configure"
 #include "confdefs.h"
 #include <assert.h>
 Syntax Error
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:1126: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:1184: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   :
@@ -1185,6 +1176,14 @@ else
   echo "$ac_t""no" 1>&6
 fi
 done
+
+# only enable htxf when something that uses it is enabled
+if test "$hotline_server" = "yes" -o "$hotline_client" = "yes"; then
+   if test "$use_pthread" = "yes" ; then
+      echo "   pthreads enabled for file transfers"
+      cat >> confdefs.h <<\EOF
+#define CONFIG_HTXF_PTHREAD 1
+EOF
 
 
       # fark! darwin has no pthread_kill, kill should do fine
