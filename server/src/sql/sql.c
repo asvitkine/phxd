@@ -9,12 +9,13 @@
 
 static MYSQL *Db;
 
-char *last_host;
-char *last_user;
-char *last_pass;
-char *last_data;
+static char *last_host;
+static char *last_user;
+static char *last_pass;
+static char *last_data;
 
-void macroman_to_utf8(const char *input, char *outbuf, size_t outlen)
+static void
+macroman_to_utf8(const char *input, char *outbuf, size_t outlen)
 {
 	iconv_t cd;
 	size_t in_size;
@@ -26,7 +27,7 @@ void macroman_to_utf8(const char *input, char *outbuf, size_t outlen)
 		strncpy(outbuf, input, outlen);
 		outbuf[outlen - 1] = '\0';
 		return;
-   }
+	}
 
 	in_size = strlen(input);
 	if ((size_t)(-1) == iconv(cd, &inptr, &in_size, &out, &outlen)) {
