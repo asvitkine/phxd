@@ -192,13 +192,13 @@ void cmd_exec (struct htlc_conn *htlc, char *command)
             snprintf(rootdir, sizeof(rootdir), "ROOTDIR=%s", htlc->rootdir);
             snprintf(account, sizeof(htlc->login), "ACCOUNT=%s", htlc->login);
             if (htlc->flags.is_hlcomm_client)
-               sprintf((char *)&version, "CLIENT=1.5+");
+               snprintf(version, sizeof(version), "CLIENT=1.5+");
             else if (htlc->flags.is_tide_client)
-               sprintf((char *)&version, "CLIENT=Panorama");
+               snprintf(version, sizeof(version), "CLIENT=Panorama");
             else if (htlc->flags.is_frogblast)
-               sprintf((char *)&version, "CLIENT=Frogblast");
+               snprintf(version, sizeof(version), "CLIENT=Frogblast");
             else
-               sprintf((char *)&version, "CLIENT=1.2.3 compatible");
+               snprintf(version, sizeof(version), "CLIENT=1.2.3 compatible");
 
             envp[0] = rootdir;
             envp[1] = account;
