@@ -262,8 +262,7 @@ suffix_type_creator (char *buf, const char *path)
    /* the period (`.') is used to map a type/creator to
     * all files without an extension */
    if (!(suff = suffix(path))) {
-      suff = malloc(2);
-      sprintf(suff, ".");
+      suff = strdup(".");
    } else {
       /* don't call strtolower() on bytes in path! */
       suff = strdup(suff);
@@ -277,7 +276,8 @@ suffix_type_creator (char *buf, const char *path)
 
    /* merge them together into buf */
    memcpy(buf, avtc->type, 4);
-   memcpy(buf+4, avtc->creator, 4);   
+   memcpy(buf+4, avtc->creator, 4);
+   xfree(avtc);
 }
 
 void
