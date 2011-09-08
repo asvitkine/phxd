@@ -252,7 +252,7 @@ suffix (const char *path)
 static void
 suffix_type_creator (char *buf, const char *path)
 {
-   char *suff, *tmp;
+   char *suff;
    struct avolent *avtc;
 
    /* avtc is the apple volume type/creator struct */
@@ -264,24 +264,20 @@ suffix_type_creator (char *buf, const char *path)
    if (!(suff = suffix(path))) {
       suff = malloc(2);
       sprintf(suff, ".");
+   } else {
+      /* don't call strtolower() on bytes in path! */
+      suff = strdup(suff);
    }
 
    /* convert the extension to lower case, then look it
     * up in the extension list */
    strtolower(suff);
    check_avolume(suff, avtc);
+   free(suff);
 
-   /* 4 bytes for type, 4 for creator, and 1 for a
-    * termintating null character */
-   tmp = malloc(9);
-   
-   /* merge them together so that we can copy it to buf */
-   sprintf(tmp, "%s%s", avtc->type, avtc->creator);
-   
-   /* have to use memcpy cause sprintf adds a terminating
-    * null character to the end of the resulting string */
-   memcpy(buf, tmp, 8);
-   
+   /* merge them together into buf */
+   memcpy(buf, avtc->type, 4);
+   memcpy(buf+4, avtc->creator, 4);   
 }
 
 void
