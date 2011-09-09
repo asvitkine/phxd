@@ -23,6 +23,10 @@
 #undef CONFIG_HOTLINE_CLIENT
 #endif
 
+#define ENABLE_BACKTRACE
+#define ENABLE_DAEMONIZE
+#define ENABLE_KEEPALIVE
+
 char **hxd_environ = 0;
 
 int hxd_open_max = 0;
@@ -364,16 +368,37 @@ ret:
    errno = serrno;
 }
 
-static RETSIGTYPE
-sig_bus (int sig __attribute__((__unused__)))
+#ifdef ENABLE_BACKTRACE
+static void log_backtrace(void)
 {
-   hxd_log("\n\
-caught SIGBUS -- mail ran@krazynet.com with output from:\n\
-$ gcc -v hxd.c\n\
-$ cc -v hxd.c\n\
-$ gdb hxd core\n\
-(gdb) backtrace\n\
-and any other information you think is useful");
+   void *frame_ptrs[64];
+   int count = backtrace(frame_ptrs, 64);
+   char **fnames = backtrace_symbols(frame_ptrs, count);
+   int i;
+   for (i = 0; i < count; i++)
+      hxd_log("%s", fnames[i]);
+   free(fnames);
+}
+#endif
+
+static RETSIGTYPE
+sig_fatal (int sig)
+{
+   extern const char * const sys_siglist[];
+   hxd_log("\n");
+   hxd_log("caught signal %d", sig);
+   hxd_log("%s", sys_siglist[sig]);
+#ifdef ENABLE_BACKTRACE
+   log_backtrace();
+#endif
+   _exit(sig);
+}
+
+static RETSIGTYPE
+sig_int (int sig __attribute__((__unused__)))
+{
+   hxd_log("\n");
+   hxd_log("caught SIGINT");
    abort();
 }
 
@@ -489,10 +514,77 @@ sig_fpe (int sig, int fpe)
 extern void DTBLINIT (void);
 #endif
 
+#ifdef ENABLE_KEEPALIVE
+static pid_t child_pid;
+static void kill_child_atexit(void)
+{
+   if (child_pid)
+      kill(child_pid, SIGKILL);
+}
+
+// Spawns a child. Child will take-over from here if parent ever dies.
+static void keep_alive(void)
+{
+   pid_t pid = fork();
+   // If this is the child, wait for the parent to die.
+   while (pid == 0) {
+      while (getppid() != 1)
+         sleep(1);
+      // Parent has died. fork() off a child.
+      pid = fork();
+   }
+   child_pid = pid;
+   atexit(kill_child_atexit);
+}
+#endif
+
+#ifdef ENABLE_DAEMONIZE
+static void daemonize(void)
+{
+    pid_t pid, sid;
+
+    /* already a daemon */
+    if ( getppid() == 1 ) return;
+
+    /* Fork off the parent process */
+    pid = fork();
+    if (pid < 0) {
+        exit(EXIT_FAILURE);
+    }
+    /* If we got a good PID, then we can exit the parent process. */
+    if (pid > 0) {
+        exit(EXIT_SUCCESS);
+    }
+
+    /* At this point we are executing as the child process */
+
+    /* Change the file mode mask */
+    umask(0);
+
+    /* Create a new SID for the child process */
+    sid = setsid();
+    if (sid < 0) {
+        exit(EXIT_FAILURE);
+    }
+
+    /* Redirect standard files to /dev/null */
+    freopen( "/dev/null", "r", stdin);
+    freopen( "/dev/null", "w", stdout);
+    freopen( "/dev/null", "w", stderr);
+}
+#endif
+
 int
 main (int argc __attribute__((__unused__)), char **argv __attribute__((__unused__)), char **envp)
 {
    struct sigaction act;
+
+#ifdef ENABLE_DAEMONIZE
+   daemonize();
+#endif
+#ifdef ENABLE_KEEPALIVE
+   keep_alive();
+#endif
 
 #if XMALLOC_DEBUG
    DTBLINIT();
@@ -530,10 +622,16 @@ main (int argc __attribute__((__unused__)), char **argv __attribute__((__unused_
    sigaction(SIGPIPE, &act, 0);
    act.sa_handler = (RETSIGTYPE (*)(int))sig_fpe;
    sigaction(SIGFPE, &act, 0);
-   act.sa_handler = sig_bus;
-   sigaction(SIGBUS, &act, 0);
-   act.sa_handler = sig_alrm;
-   sigaction(SIGALRM, &act, 0);
+
+   {
+      int i, fatal_signals[] = { SIGBUS, SIGSEGV, SIGABRT, SIGTRAP, SIGILL, SIGSYS, SIGXCPU, SIGXFSZ, SIGKILL };
+      act.sa_handler = sig_fatal;
+      for (i = 0; i < sizeof(fatal_signals)/sizeof(fatal_signals[0]); i++)
+         sigaction(fatal_signals[i], &act, 0);
+   }
+
+   act.sa_handler = sig_int;
+   sigaction(SIGINT, &act, 0);
    act.sa_handler = sig_chld;
    act.sa_flags |= SA_NOCLDSTOP;
    sigaction(SIGCHLD, &act, 0);
@@ -624,7 +722,7 @@ main (int argc __attribute__((__unused__)), char **argv __attribute__((__unused_
    sql_init_user_tbl();
    sql_start(hxd_version);
 #endif
-   hxd_log("hxd version %s started, hxd_open_max = %d", hxd_version, hxd_open_max);
+   hxd_log("hxd version %s started, hxd_open_max = %d, pid = %d", hxd_version, hxd_open_max, getpid());
 
 #if defined(CONFIG_HTXF_QUEUE)
    hxd_log("Queueing enabled!");
