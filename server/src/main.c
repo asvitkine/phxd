@@ -340,11 +340,22 @@ cipher_init (void)
 extern void hlserver_reap_pid (pid_t pid, int status);
 extern void hlclient_reap_pid (pid_t pid, int status);
 
+static RETSIGTYPE
+sig_log_info (int sig)
+{
+   extern const char * const sys_siglist[];
+   hxd_log("\n");
+   hxd_log("caught signal %d", sig);
+   hxd_log("%s", sys_siglist[sig]);
+}
+
 RETSIGTYPE
 sig_chld (int sig __attribute__((__unused__)))
 {
    int status, serrno = errno;
    pid_t pid;
+
+   sig_log_info(sig);
 
 #ifndef WAIT_ANY
 #define WAIT_ANY -1
@@ -384,10 +395,7 @@ static void log_backtrace(void)
 static RETSIGTYPE
 sig_fatal (int sig)
 {
-   extern const char * const sys_siglist[];
-   hxd_log("\n");
-   hxd_log("caught signal %d", sig);
-   hxd_log("%s", sys_siglist[sig]);
+   sig_log_info(sig);
 #ifdef ENABLE_BACKTRACE
    log_backtrace();
 #endif
@@ -453,6 +461,8 @@ read_config_file (void *ptr)
 static RETSIGTYPE
 sig_hup (int sig __attribute__((__unused__)))
 {
+   hxd_log("\n");
+   hxd_log("caught SIGHUP");
    timer_add_secs(0, read_config_file, (void *)1);
 }
 #endif
@@ -616,10 +626,20 @@ main (int argc __attribute__((__unused__)), char **argv __attribute__((__unused_
 
    hxd_environ = envp;
 
+
+   memset(&act, 0, sizeof(act));
+
+   {
+      int i;
+      act.sa_handler = sig_log_info;
+      for (i = 0; i < 32; i++)
+         sigaction(i, &act, 0);
+   }
+
    act.sa_handler = sig_hup;
    sigaction(SIGHUP, &act, 0);
-   act.sa_handler = SIG_IGN;
-   sigaction(SIGPIPE, &act, 0);
+   //act.sa_handler = SIG_IGN;
+   //sigaction(SIGPIPE, &act, 0);
    act.sa_handler = (RETSIGTYPE (*)(int))sig_fpe;
    sigaction(SIGFPE, &act, 0);
 
