@@ -25,7 +25,7 @@
 
 #define ENABLE_BACKTRACE
 #define ENABLE_DAEMONIZE
-#define ENABLE_KEEPALIVE
+//#define ENABLE_KEEPALIVE
 
 char **hxd_environ = 0;
 
@@ -344,7 +344,7 @@ static RETSIGTYPE
 sig_log_info (int sig)
 {
    extern const char * const sys_siglist[];
-   hxd_log("\n");
+   hxd_log("------");
    hxd_log("caught signal %d", sig);
    hxd_log("%s", sys_siglist[sig]);
 }
@@ -397,16 +397,16 @@ sig_fatal (int sig)
 {
    sig_log_info(sig);
 #ifdef ENABLE_BACKTRACE
+   hxd_log("Attempting backtrace...");
    log_backtrace();
 #endif
    _exit(sig);
 }
 
 static RETSIGTYPE
-sig_int (int sig __attribute__((__unused__)))
+sig_int (int sig)
 {
-   hxd_log("\n");
-   hxd_log("caught SIGINT");
+   sig_log_info(sig);
    abort();
 }
 
