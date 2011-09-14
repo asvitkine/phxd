@@ -326,7 +326,7 @@ chrexpand (char *str, int len)
          break;
    }
    len -= off;
-   memcpy(p, p+off, len);
+   memmove(p, p+off, len);
    p[len] = 0;
 
    return off;
