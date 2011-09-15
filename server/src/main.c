@@ -27,6 +27,10 @@
 #define ENABLE_DAEMONIZE
 //#define ENABLE_KEEPALIVE
 
+#ifdef ENABLE_BACKTRACE
+#include <execinfo.h>
+#endif
+
 char **hxd_environ = 0;
 
 int hxd_open_max = 0;
@@ -82,12 +86,6 @@ hxd_log (const char *fmt, ...)
    buf[len++] = '\n';
    write(log_fd, buf, len);
    fsync(log_fd);
-}
-
-static RETSIGTYPE
-sig_alrm (int sig __attribute__((__unused__)))
-{
-
 }
 
 struct timer {
@@ -595,6 +593,14 @@ main (int argc __attribute__((__unused__)), char **argv __attribute__((__unused_
 #ifdef ENABLE_KEEPALIVE
    keep_alive();
 #endif
+
+   {
+      struct rlimit limit;
+      if (!getrlimit(RLIMIT_CORE, &limit)) {
+         limit.rlim_cur = limit.rlim_max;
+         setrlimit(RLIMIT_CORE, &limit);
+      }
+   }
 
 #if XMALLOC_DEBUG
    DTBLINIT();
