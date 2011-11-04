@@ -492,8 +492,12 @@ void wd_signal_thread(wi_runtime_instance_t *arg) {
 				break;
 
 			case SIGTERM:
+#if 1
+				wi_log_info(WI_STR("Signal TERM received, ignoring"));
+#else
 				wi_log_info(WI_STR("Signal TERM received, quitting"));
 				wd_running = false;
+#endif
 				break;
 		}
 		
