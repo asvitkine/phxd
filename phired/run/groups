@@ -1,0 +1,29 @@
+# groups
+#
+# This file contains a newline separated list of group. Each line
+# consists of colon separated fields with the following meanings:
+#
+#    name
+#    can get user info
+#    can broadcast
+#    can post news
+#    can clear news
+#    can download
+#    can upload
+#    can upload anywhere
+#    can create folders
+#    can move files
+#    can delete files
+#    can view drop boxes
+#    can create accounts
+#    can edit accounts
+#    can delete accounts
+#    can elevate privileges
+#    can kick users
+#    can ban users
+#    cannot be kicked
+#    download speed limit
+#    upload speed limit
+#    download limit
+#    upload limit
+#    can set chat topic

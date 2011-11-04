@@ -1,0 +1,179 @@
+# wired.conf
+
+### SERVER ############################################################
+
+# Name of the server.
+# (default "Wired Server")
+name = Wired Server
+
+# A short description of the server.
+# (default "Wired Server")
+description = Wired Server
+
+# A specific address to bind to, instead of binding to all available
+# addresses. Can be specified more than once, for each address the
+# server should listen on.
+# (no default)
+#address = localhost
+
+# Port number to listen on.
+# (default 2000)
+port = 2000
+
+# Name or id of the user that the server should operate as.
+# (default "@WD_USER@")
+user = @WD_USER@
+
+# Name or id of the group that the server should operate as.
+# (default "@WD_GROUP@")
+group = @WD_GROUP@
+
+# Number of seconds after which to mark inactive clients as idle.
+# (default 600)
+idle time = 600
+
+# Number of seconds a temporary ban lasts.
+# (default 1800)
+ban time = 1800
+
+# If set, the news file will be truncated after this many entries.
+# (no default)
+#news limit = 100
+
+# OpenSSL cipher lists to use for control and transfer connections.
+# See ciphers(1) for information on its format.
+# (default "ALL:NULL:!MD5:@STRENGTH")
+control cipher = ALL:NULL:!MD5:@STRENGTH
+transfer cipher = ALL:NULL:!MD5:@STRENGTH
+
+# If set, enables the use of Zeroconf service publication to allow
+# clients on the local network to automatically find the server.
+# (default "yes")
+zeroconf = yes
+
+
+### FILES #############################################################
+
+# Path to the files directory.
+# (default "files")
+files = files
+
+# Path to an index file. If it is defined, Wired will generate an index
+# of all files.
+# (no default)
+index = files.index
+
+# If set, indexes files after this many seconds. Without it, no
+# automatic indexing takes place.
+# (no default)
+#index time = 3600
+
+# Method to use for client file searches. Can be either "live" for live
+# search or "index" for indexed ones. If set to search the index, make
+# sure the index has been enabled.
+# (default "live")
+search method = index
+
+# If set, file listings will include files beginning with a ".".
+# (default "no")
+show dot files = no
+
+# If set, file listings will include files that are marked invisible
+# by Mac OS. Only available on Mac OS X.
+# (default "no")
+show invisible files = no
+
+# A regular expression of patterns to ignore in file listings.
+# (no default)
+#ignore expression = /(foo|bar)/i
+
+
+### TRACKERS ##########################################################
+
+# If set, registers will all configured trackers.
+# (default "no")
+register = no
+
+# A URL of a tracker to register with. The tracker is connected to at
+# startup, and then periodically informed with status updates. The
+# path of the URL is the category to register as. Can be specified more
+# than once, for each tracker that the server should register with.
+# (default "wiredtracker://wired.zankasoftware.com/")
+tracker = wiredtracker://wired.zankasoftware.com/
+
+# The URL of this server to send to trackers. If this does not
+# resolve back to the address the server is connecting from, the
+# tracker may rewrite the URL or deny registration altogether.
+# (no default)
+#url = wired://127.0.0.1/
+
+# Connection bandwidth in bytes/sec. Sent to trackers on registration.
+# (no default)
+#bandwidth = 64000
+
+
+### TRANSFERS #########################################################
+
+# Maximum number of downloads across all clients.
+# (default 10)
+total downloads = 10
+
+# Maximum number of uploads across all clients.
+# (default 10)
+total uploads = 10
+
+# Maximum number of downloads per client.
+# (default 1)
+client downloads = 1
+
+# Maximum number of uploads per client.
+# (default 1)
+client uploads = 1
+
+# Maximum total speed of downloads in bytes/sec.
+# (no default)
+#total download speed = 100000
+
+# Maximum total speed of uploads in bytes/sec.
+# (no default)
+#total upload speed = 50000
+
+
+### PATHS #############################################################
+
+# Paths that do not begin with a / are taken to be relative the root
+# path (-d flag).
+
+# Path to a file in which place to process id of the running daemon.
+# (default "wired.pid")
+pid = wired.pid
+
+# Path to a file in which to place the current status.
+# (default "wired.status")
+status = wired.status
+
+# Path to the users file.
+# (default "users")
+users = users
+
+# Path to the groups file.
+# (default "groups")
+groups = groups
+
+# Path to the news file.
+# (default "news")
+news = news
+
+# Path to the banlist file.
+# (default "banlist")
+banlist = banlist
+
+# Path to an OpenSSL certificate PEM file. See req(1) for information
+# on its format.
+# (default "etc/certificate.pem")
+certificate = etc/certificate.pem
+
+# Path to an image file that will be sent to clients as the banner.
+# PNG file format is recommended. Maximum image size is 200x32 pixels.
+# (no default)
+#banner = banner.png
